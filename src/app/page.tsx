@@ -26,6 +26,9 @@ export default function Home() {
         <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
           A deployable Next.js app foundation for helping students turn one Professional Profile into polished public and exportable outputs.
         </p>
+        <a className="mt-8 inline-flex w-fit rounded-full bg-emerald-300 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-200" href="/preview">
+          Try the Anonymous Preview
+        </a>
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
           {routeGroups.map((group) => (
             <article key={group.name} className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-xl shadow-black/20">
