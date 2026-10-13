@@ -7,7 +7,7 @@ describe("Magic Link sign-in", () => {
   it("requests a Magic Link and supports resend and change-email states", async () => {
     const user = userEvent.setup();
     const requestMagicLink = vi.fn().mockResolvedValue({ ok: true });
-    render(createElement(MagicLinkSignIn, { requestMagicLink }));
+    render(createElement(MagicLinkSignIn, { requestMagicLinkAction: requestMagicLink }));
 
     await user.type(screen.getByLabelText(/email/i), "maya@example.edu");
     await user.click(screen.getByRole("button", { name: /send magic link/i }));
@@ -25,7 +25,7 @@ describe("Magic Link sign-in", () => {
   it("shows clear errors when a Magic Link request fails", async () => {
     const user = userEvent.setup();
     const requestMagicLink = vi.fn().mockResolvedValue({ ok: false, error: "Use a valid student email." });
-    render(createElement(MagicLinkSignIn, { requestMagicLink }));
+    render(createElement(MagicLinkSignIn, { requestMagicLinkAction: requestMagicLink }));
 
     await user.type(screen.getByLabelText(/email/i), "maya@example.edu");
     await user.click(screen.getByRole("button", { name: /send magic link/i }));

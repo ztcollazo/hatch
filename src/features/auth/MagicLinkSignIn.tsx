@@ -5,10 +5,10 @@ import { useState } from "react";
 export type MagicLinkResult = { ok: true } | { ok: false; error: string };
 
 type Props = {
-  requestMagicLink: (email: string) => Promise<MagicLinkResult>;
+  requestMagicLinkAction: (email: string) => Promise<MagicLinkResult>;
 };
 
-export function MagicLinkSignIn({ requestMagicLink }: Props) {
+export function MagicLinkSignIn({ requestMagicLinkAction }: Props) {
   const [email, setEmail] = useState("");
   const [sentEmail, setSentEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function MagicLinkSignIn({ requestMagicLink }: Props) {
   async function sendMagicLink(targetEmail = email) {
     setError(null);
     setIsSubmitting(true);
-    const result = await requestMagicLink(targetEmail);
+    const result = await requestMagicLinkAction(targetEmail);
     setIsSubmitting(false);
     if (result.ok) setSentEmail(targetEmail);
     else setError(result.error);
