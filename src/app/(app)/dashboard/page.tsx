@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { claimProfileHandle } from "@/features/professional-profile/actions";
 import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
+import { ProfileSectionEditor } from "@/features/professional-profile/ProfileSectionEditor";
 import { ensureOneProfessionalProfile, type SupabaseProfileClient } from "@/features/professional-profile/profiles";
 
 export default async function DashboardPage() {
@@ -31,6 +32,7 @@ export default async function DashboardPage() {
           currentHandle={profile.handle ?? null}
           claim={claimProfileHandle}
         />
+        <ProfileSectionEditor profileId={profile.id} />
       </section>
     </main>
   );
