@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+declare global {
+  interface Window {
+    __magicLinkCallbackStarted?: boolean;
+  }
+}
+
 type Props = {
   code?: string;
 };
@@ -14,6 +20,7 @@ export function AuthCallbackClient({ code }: Props) {
   const [status, setStatus] = useState("Starting Magic Link callback…");
 
   useEffect(() => {
+    window.__magicLinkCallbackStarted = true;
     let isActive = true;
     let didFinish = false;
 
