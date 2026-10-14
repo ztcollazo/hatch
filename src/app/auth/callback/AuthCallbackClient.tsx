@@ -7,6 +7,8 @@ type Props = {
   code?: string;
 };
 
+const CALLBACK_TIMEOUT_MS = 10_000;
+
 export function AuthCallbackClient({ code }: Props) {
   const [error, setError] = useState<string | null>(null);
 
@@ -19,15 +21,33 @@ export function AuthCallbackClient({ code }: Props) {
         return;
       }
 
-      const supabase = createClient();
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      try {
+        const supabase = createClient();
+        const timeout = new Promise<never>((_, reject) => {
+          window.setTimeout(() => reject(new Error("Magic Link sign-in timed out. Request a fresh link and try again.")), CALLBACK_TIMEOUT_MS);
+        });
 
-      if (exchangeError) {
-        if (isMounted) setError(exchangeError.message);
-        return;
+        const { error: exchangeError } = await Promise.race([
+          supabase.auth.exchangeCodeForSession(code),
+          timeout,
+        ]);
+
+        if (exchangeError) throw new Error(exchangeError.message);
+
+        window.location.replace("/dashboard");
+      } catch (caughtError) {
+        if (!isMounted) return;
+
+        const supabase = createClient();
+        const { data } = await supabase.auth.getSession();
+
+        if (data.session) {
+          window.location.replace("/dashboard");
+          return;
+        }
+
+        setError(caughtError instanceof Error ? caughtError.message : "Magic Link sign-in failed. Request a fresh link and try again.");
       }
-
-      window.location.replace("/dashboard");
     }
 
     void completeSignIn();
