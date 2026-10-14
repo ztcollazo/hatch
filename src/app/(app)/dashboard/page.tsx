@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { claimProfileHandle } from "@/features/professional-profile/actions";
+import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
 import { ensureOneProfessionalProfile, type SupabaseProfileClient } from "@/features/professional-profile/profiles";
 
 export default async function DashboardPage() {
@@ -24,6 +26,11 @@ export default async function DashboardPage() {
           <dt className="text-sm font-semibold text-slate-400">Full name</dt>
           <dd className="mt-1 text-xl">{profile.full_name}</dd>
         </dl>
+        <HandleClaimForm
+          profileId={profile.id}
+          currentHandle={profile.handle ?? null}
+          claim={claimProfileHandle}
+        />
       </section>
     </main>
   );

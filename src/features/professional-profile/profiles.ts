@@ -4,10 +4,20 @@ export type ProfessionalProfileRecord = {
   full_name: string | null;
   target_role?: string | null;
   headline?: string | null;
+  handle?: string | null;
 };
 
 export type SupabaseProfileClient = {
   from: (table: "professional_profiles") => {
+    update: (values: { handle: string }) => {
+      eq: (column: "id", value: string) => {
+        is: (column: "handle", value: null) => {
+          select: (columns: string) => {
+            single: () => Promise<{ data: { handle: string } | null; error: { code?: string; message: string } | null }>;
+          };
+        };
+      };
+    };
     select: (columns: string) => {
       eq: (column: "owner_id", value: string) => {
         maybeSingle: () => Promise<{ data: ProfessionalProfileRecord | null; error: { message: string; code?: string } | null }>;
