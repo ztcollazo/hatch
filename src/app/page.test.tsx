@@ -1,10 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { createElement } from "react";
 import Home from "./page";
 
 describe("home page", () => {
-  it("renders the Professional Profile Hub app shell and health status", () => {
-    render(createElement(Home));
+  it("renders the Professional Profile Hub app shell and health status", async () => {
+    render(await Home());
 
     expect(
       screen.getByRole("heading", { name: /professional profile hub/i }),

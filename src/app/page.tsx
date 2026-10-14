@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { completeMagicLinkSignIn } from "@/features/auth/callback";
+
 const routeGroups = [
   {
     name: "Draft Profile",
@@ -13,7 +16,17 @@ const routeGroups = [
   },
 ];
 
-export default function Home() {
+type HomeProps = {
+  searchParams?: Promise<{ code?: string }>;
+};
+
+export default async function Home({ searchParams }: HomeProps = {}) {
+  const code = (await searchParams)?.code;
+
+  if (code) {
+    await completeMagicLinkSignIn(code);
+    redirect("/dashboard");
+  }
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center px-6 py-16">
