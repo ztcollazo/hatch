@@ -9,9 +9,9 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user?.email) redirect("/auth/sign-in");
+  if (!user) redirect("/auth/sign-in");
 
-  const profile = await ensureOneProfessionalProfile(supabase as unknown as SupabaseProfileClient, user.id, user.email);
+  const profile = await ensureOneProfessionalProfile(supabase as unknown as SupabaseProfileClient, user.id, user.email ?? "");
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-16 text-white">

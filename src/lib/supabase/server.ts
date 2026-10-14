@@ -7,6 +7,12 @@ export async function createClient() {
   const { url, anonKey } = getSupabaseConfig();
 
   return createServerClient(url, anonKey, {
+    auth: {
+      flowType: "pkce",
+      experimental: {
+        appendPkceFlowIdToRedirects: true,
+      },
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll();

@@ -11,14 +11,14 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as 42226
+as $function$
 begin
   if old.handle is not null and new.handle is distinct from old.handle then
     raise exception 'Handle changes are not supported';
   end if;
   return new;
 end;
-42226;
+$function$;
 
 drop trigger if exists prevent_handle_changes on public.professional_profiles;
 create trigger prevent_handle_changes

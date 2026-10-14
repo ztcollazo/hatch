@@ -4,5 +4,12 @@ import { getSupabaseConfig } from "./config";
 export function createClient() {
   const { url, anonKey } = getSupabaseConfig();
 
-  return createBrowserClient(url, anonKey);
+  return createBrowserClient(url, anonKey, {
+    auth: {
+      flowType: "pkce",
+      experimental: {
+        appendPkceFlowIdToRedirects: true,
+      },
+    },
+  });
 }
