@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { completeMagicLinkSignIn } from "@/features/auth/callback";
 
 const routeGroups = [
   {
@@ -24,8 +23,7 @@ export default async function Home({ searchParams }: HomeProps = {}) {
   const code = (await searchParams)?.code;
 
   if (code) {
-    await completeMagicLinkSignIn(code);
-    redirect("/dashboard");
+    redirect("/auth/callback?code=" + encodeURIComponent(code));
   }
   return (
     <main className="min-h-screen bg-slate-950 text-white">
