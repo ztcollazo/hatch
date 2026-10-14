@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export type MagicLinkResult = { ok: true } | { ok: false; error: string };
 
 type Props = {
-  requestMagicLinkAction: (email: string) => Promise<MagicLinkResult>;
+  requestMagicLinkAction?: (email: string) => Promise<MagicLinkResult>;
 };
 
-export function MagicLinkSignIn({ requestMagicLinkAction }: Props) {
+export function MagicLinkSignIn({ requestMagicLinkAction = requestMagicLinkInBrowser }: Props) {
   const [email, setEmail] = useState("");
   const [sentEmail, setSentEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,4 +56,20 @@ export function MagicLinkSignIn({ requestMagicLinkAction }: Props) {
       </button>
     </form>
   );
+}
+
+
+async function requestMagicLinkInBrowser(email: string): Promise<MagicLinkResult> {
+  if (!email.includes("@")) return { ok: false, error: "Use a valid email address." };
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: window.location.origin + "/auth/callback",
+    },
+  });
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
 }
