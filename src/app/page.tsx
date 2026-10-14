@@ -16,14 +16,19 @@ const routeGroups = [
 ];
 
 type HomeProps = {
-  searchParams?: Promise<{ code?: string }>;
+  searchParams?: Promise<{ code?: string; token_hash?: string; type?: string }>;
 };
 
 export default async function Home({ searchParams }: HomeProps = {}) {
-  const code = (await searchParams)?.code;
+  const params = await searchParams;
+  const callbackParams = new URLSearchParams();
 
-  if (code) {
-    redirect("/auth/callback?code=" + encodeURIComponent(code));
+  if (params?.code) callbackParams.set("code", params.code);
+  if (params?.token_hash) callbackParams.set("token_hash", params.token_hash);
+  if (params?.type) callbackParams.set("type", params.type);
+
+  if (callbackParams.size > 0) {
+    redirect("/auth/callback?" + callbackParams.toString());
   }
   return (
     <main className="min-h-screen bg-slate-950 text-white">
