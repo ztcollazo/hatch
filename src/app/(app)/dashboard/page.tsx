@@ -21,8 +21,7 @@ export default async function DashboardPage() {
   const draft = await loadDraftProfile(supabase as never, profile.id);
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-16 text-white">
-      <section className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-white/5 p-8">
+    <main className="min-h-screen bg-slate-950 px-6 py-16 text-white"><section className="mx-auto max-w-7xl rounded-3xl border border-white/10 bg-white/5 p-8">
         <p className="text-sm font-medium uppercase tracking-wide text-emerald-200">
           Section Editing Dashboard
         </p>
@@ -34,7 +33,7 @@ export default async function DashboardPage() {
           <dt className="text-sm font-semibold text-slate-400">Full name</dt>
           <dd className="mt-1 text-xl">{profile.full_name}</dd>
         </dl>
-        <ProfileIdentityForm initialFullName={profile.full_name ?? ""} save={saveProfileFullName.bind(null, profile.id)} />
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.8fr)] lg:items-start"><div><ProfileIdentityForm initialFullName={profile.full_name ?? ""} save={saveProfileFullName.bind(null, profile.id)} />
         <ProfileDetailsForm initialDetails={{ targetRole: profile.target_role ?? "", headline: profile.headline ?? "", publicProfessionalLink: profile.public_professional_link ?? "", bio: draft.bio }} save={saveProfileDetails.bind(null, profile.id)} />
         <HandleClaimForm
           profileId={profile.id}
@@ -43,7 +42,7 @@ export default async function DashboardPage() {
         />
         <ProfileElementsForm save={saveProfileElement.bind(null, profile.id)} initialItems={draft.elements} />
         <ProfileSectionEditor profileId={profile.id} />
-        <PrivateProfilePreview profile={draft} />
+        </div><PrivateProfilePreview profile={draft} /></div>
       </section>
     </main>
   );

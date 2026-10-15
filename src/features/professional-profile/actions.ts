@@ -53,7 +53,7 @@ export async function saveProfileElement(profileId: string, kind: ProfileElement
   if (error) return { ok: false as const, error: error.message };
   revalidatePath("/dashboard");
   const { data } = await supabase.from(definition.table).select("id").eq("profile_id", profileId).order("item_order", { ascending: false }).limit(1).single();
-  return { ok: true as const, item: { id: data?.id ?? crypto.randomUUID(), label: values.label ?? values.schoolName ?? values.roleTitle ?? values.url ?? "Saved item" } };
+  return { ok: true as const, item: { id: data?.id ?? crypto.randomUUID(), label: values.label ?? values.schoolName ?? values.roleTitle ?? values.url ?? "Saved item", values } };
 }
 
 export async function claimProfileHandle(profileId: string, currentHandle: string | null, requestedHandle: string) {
