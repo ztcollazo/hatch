@@ -1,28 +1,302 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { useState } from "react";
-import type { DraftProfile } from "./profile-view";
+import type { DraftElement, DraftProfile, DraftProject } from "./profile-view";
 
+type Template = "recruiter-brief" | "project-showcase";
 type Props = { profile: DraftProfile };
 
-export function PrivateProfilePreview({ profile }: Props) {
-  const [template, setTemplate] = useState<"recruiter-brief" | "project-showcase">("recruiter-brief");
-  const projects = profile.projects.filter((project) => project.show_on_profile_page).sort((a, b) => a.item_order - b.item_order);
+const elementTitles: Record<string, string> = {
+  education: "Education",
+  experience: "Experience",
+  skill: "Skills",
+  "professional-link": "Selected links",
+  contact: "Contact",
+};
+
+const fieldLabels: Record<string, string> = {
+  schoolName: "School",
+  degree: "Degree",
+  fieldOfStudy: "Field of study",
+  startDate: "Started",
+  endDate: "Ended",
+  roleTitle: "Role",
+  organization: "Organization",
+  summary: "About",
+  url: "Link",
+  linkType: "Type",
+  actionType: "Action",
+};
+
+function getTypeLabel(value: string | undefined) {
+  const labels: Record<string, string> = {
+    linkedin: "LinkedIn",
+    github: "GitHub",
+    portfolio: "Portfolio",
+    website: "Personal website",
+    email: "Email me",
+    calendar: "Book a call",
+    phone: "Call me",
+    other: "Other",
+  };
+  return labels[value ?? ""] ?? "Open link";
+}
+
+function ElementCard({ kind, item }: { kind: string; item: DraftElement }) {
+  const values = Object.entries(item.values).filter(
+    ([key, value]) => key !== "label" && key !== "id" && Boolean(value),
+  );
+
+  if (kind === "skill") {
+    return <span className="preview-skill-pill">{item.label}</span>;
+  }
+
+  if (kind === "professional-link" || kind === "contact") {
+    const type = item.values.linkType || item.values.actionType;
+    const typeLabel = getTypeLabel(type);
+
+    return (
+      <a
+        className={`preview-action-card preview-action-card--${kind}`}
+        href={item.values.url}
+        target="_blank"
+        rel="noreferrer"
+      >
+        <span className="preview-action-icon">↗</span>
+        <span className="preview-action-content">
+          <strong>{item.label}</strong>
+          <small>{typeLabel}</small>
+        </span>
+        <span className="preview-action-arrow" aria-hidden="true">
+          →
+        </span>
+      </a>
+    );
+  }
+
   return (
-    <section aria-label="Private Profile Page Preview" className="mt-8 rounded-2xl border border-emerald-300/30 bg-slate-900 p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><p className="text-sm font-semibold uppercase tracking-wide text-emerald-200">Private Preview</p><p className="text-sm text-slate-300">Draft changes are visible only to you until you publish.</p></div>
-        <label className="text-sm">Template <select className="ml-2 rounded-lg bg-slate-950 px-2 py-2" value={template} onChange={(event) => setTemplate(event.target.value as typeof template)}><option value="recruiter-brief">Recruiter Brief</option><option value="project-showcase">Project Showcase</option></select></label>
+    <article className={`preview-element-card preview-element-card--${kind}`}>
+      <div className="preview-element-card-heading">
+        <div>
+          <h4>{item.label}</h4>
+          {kind === "education" && item.values.degree && (
+            <p>
+              {item.values.degree}
+              {item.values.fieldOfStudy ? ` · ${item.values.fieldOfStudy}` : ""}
+            </p>
+          )}
+          {kind === "experience" && item.values.organization && (
+            <p>{item.values.organization}</p>
+          )}
+        </div>
       </div>
-      <article className={`mt-5 rounded-xl p-6 text-slate-950 ${template === "project-showcase" ? "bg-emerald-50" : "bg-white"}`}>
-        <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">{template === "project-showcase" ? "Project Showcase" : "Recruiter Brief"}</p>
-        <h2 className="mt-2 text-3xl font-bold">{profile.full_name || "Your name"}</h2>
-        <p className="mt-1 text-lg">{profile.target_role || "Your target role"}</p>
-        <p className="mt-4 leading-7">{profile.headline || "Your headline will appear here."}</p>
-        {profile.bio && <p className="mt-5 leading-7">{profile.bio}</p>}
-        {projects.length > 0 && <div className="mt-5"><h3 className="font-bold">Projects</h3><ul className="mt-2 space-y-2">{projects.map((project) => <li key={project.id}><strong>{project.title}</strong>{project.summary && <span> — {project.summary}</span>}</li>)}</ul></div>}
-        {Object.entries(profile.elements).map(([kind, items]) => items.length > 0 && <div key={kind} className="mt-5"><h3 className="font-bold capitalize">{kind.replaceAll("-", " ")}</h3><ul className="mt-2 space-y-1">{items.map((item) => <li key={item.id}><strong>{item.label}</strong>{Object.entries(item.values).filter(([key, value]) => key !== "label" && value).map(([key, value]) => <span key={key}> · {value}</span>)}</li>)}</ul></div>)}
-      </article>
+      {values.length > 0 && (
+        <dl className="preview-element-facts">
+          {values.map(([key, value]) => (
+            <div key={key}>
+              <dt>{fieldLabels[key] ?? "Details"}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </article>
+  );
+}
+
+function ElementList({
+  elements,
+}: {
+  elements: Record<string, DraftElement[]>;
+}) {
+  return (
+    <div className="preview-elements">
+      {Object.entries(elements).map(([kind, items]) => {
+        if (items.length === 0) return null;
+
+        return (
+          <section
+            className={`preview-element-group preview-element-group--${kind}`}
+            key={kind}
+          >
+            <div className="preview-element-group-heading">
+              <p className="site-eyebrow">
+                {elementTitles[kind] ?? "Highlights"}
+              </p>
+              <span>{String(items.length).padStart(2, "0")}</span>
+            </div>
+            {kind === "skill" ? (
+              <div className="preview-skill-list flex gap-3">
+                {items.map((item) => (
+                  <ElementCard key={item.id} kind={kind} item={item} />
+                ))}
+              </div>
+            ) : (
+              <div className="preview-element-card-list">
+                {items.map((item) => (
+                  <ElementCard key={item.id} kind={kind} item={item} />
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProjectCards({
+  projects,
+  showcase,
+}: {
+  projects: DraftProject[];
+  showcase?: boolean;
+}) {
+  if (projects.length === 0) {
+    return (
+      <p className="preview-empty">Your published projects will appear here.</p>
+    );
+  }
+
+  return (
+    <div
+      className={showcase ? "showcase-project-grid" : "recruiter-project-list"}
+    >
+      {projects.map((project, index) => (
+        <article className="preview-project" key={project.id}>
+          {showcase && <span className="project-number">0{index + 1}</span>}
+          <h3>{project.title}</h3>
+          {project.summary && <p>{project.summary}</p>}
+          {project.url && <a href={project.url} target="_blank" rel="noreferrer" className="font-bold text-xs mt-4">View project</a>}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+export function PrivateProfilePreview({ profile }: Props) {
+  const [template, setTemplate] = useState<Template>("recruiter-brief");
+  const [fullscreen, setFullscreen] = useState(false);
+  const projects = profile.projects
+    .filter((project) => project.show_on_profile_page)
+    .sort((a, b) => a.item_order - b.item_order);
+  const isShowcase = template === "project-showcase";
+  const name = profile.full_name || "Your name";
+  const role = profile.target_role || "Your target role";
+
+  const preview = (
+    <section
+      aria-label="Private Profile Page Preview"
+      className={`profile-preview ${fullscreen ? "profile-preview--fullscreen" : ""}`}
+    >
+      <div className="preview-toolbar">
+        <div>
+          <p className="preview-toolbar-kicker">Private preview</p>
+          <p className="preview-toolbar-note">
+            Draft changes are visible only to you until you publish.
+          </p>
+        </div>
+        <div className="preview-toolbar-actions">
+          <label className="preview-template-label" htmlFor="preview-template">
+            Template
+            <select
+              id="preview-template"
+              value={template}
+              onChange={(event) => setTemplate(event.target.value as Template)}
+            >
+              <option value="recruiter-brief">Recruiter Brief</option>
+              <option value="project-showcase">Project Showcase</option>
+            </select>
+          </label>
+          <button
+            className="preview-fullscreen-button"
+            type="button"
+            onClick={() => setFullscreen((value) => !value)}
+            aria-pressed={fullscreen}
+            aria-label={
+              fullscreen ? "Exit fullscreen" : "Open fullscreen preview"
+            }
+            title={fullscreen ? "Exit fullscreen" : "Open fullscreen preview"}
+          >
+            {fullscreen ? (
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 3H3v5M3 3l6 6M16 3h5v5M21 3l-6 6M8 21H3v-5M3 21l6-6M16 21h5v-5M21 21l-6-6" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div
+        className={`preview-viewport ${isShowcase ? "showcase-site" : "recruiter-site"}`}
+      >
+        <article className="preview-site">
+          {isShowcase ? (
+            <>
+              <header className="showcase-hero">
+                <p className="site-eyebrow">Project Showcase / 2026</p>
+                <h2>{name}</h2>
+                <p className="showcase-role">{role}</p>
+                <p className="showcase-headline">
+                  {profile.headline ||
+                    "A thoughtful maker building useful things."}
+                </p>
+              </header>
+              <div className="showcase-content">
+                {profile.bio && <p className="showcase-bio">{profile.bio}</p>}
+                <section className="showcase-projects">
+                  <div className="site-section-heading">
+                    <p className="site-eyebrow">Selected work</p>
+                    <h3>Projects with a point of view.</h3>
+                  </div>
+                  <ProjectCards projects={projects} showcase />
+                </section>
+                <ElementList elements={profile.elements} />
+              </div>
+            </>
+          ) : (
+            <>
+              <header className="recruiter-hero">
+                <div>
+                  <p className="site-eyebrow">Professional profile</p>
+                  <h2>{name}</h2>
+                  <p className="recruiter-role">{role}</p>
+                </div>
+                <span className="availability-badge">
+                  Open to opportunities
+                </span>
+              </header>
+              <div className="recruiter-content">
+                <section className="recruiter-summary">
+                  <h3>Profile summary</h3>
+                  <p>
+                    {profile.headline ||
+                      "Your professional headline will appear here."}
+                  </p>
+                  {profile.bio && <p>{profile.bio}</p>}
+                </section>
+                <section className="recruiter-projects">
+                  <div className="site-section-heading">
+                    <p className="site-eyebrow">Relevant work</p>
+                    <h3>Selected projects</h3>
+                  </div>
+                  <ProjectCards projects={projects} />
+                </section>
+                <ElementList elements={profile.elements} />
+              </div>
+            </>
+          )}
+        </article>
+      </div>
     </section>
   );
+
+  return fullscreen && typeof document !== "undefined"
+    ? createPortal(preview, document.body)
+    : preview;
 }
