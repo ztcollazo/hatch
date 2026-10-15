@@ -136,10 +136,7 @@ export default async function DashboardPage() {
               claim={claimProfileHandle}
             />
             <form action={publishProfile} className="mt-6">
-              <TemplateSelector
-                profileId={profile.id}
-                selectedTemplate={selectedTemplate}
-              />
+              <TemplateSelector selectedTemplate={selectedTemplate} />
               <button type="submit" className="rounded-full bg-[#3157d5] px-5 py-3 font-semibold text-white">
                 Publish Profile Page
               </button>

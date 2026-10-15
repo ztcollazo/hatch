@@ -1,20 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { saveProfileTemplate } from "./actions";
 
 export function TemplateSelector({
-  profileId,
   selectedTemplate,
 }: {
-    profileId: string;
     selectedTemplate: "recruiter-brief" | "project-showcase";
   }) {
   const [template, setTemplate] = useState(selectedTemplate);
-  const handleTemplateChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newTemplate = event.target.value as "recruiter-brief" | "project-showcase";
-    setTemplate(newTemplate);
-    await saveProfileTemplate(profileId, newTemplate);
+  const handleTemplateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setTemplate(event.target.value as "recruiter-brief" | "project-showcase");
   };
 
   return (
