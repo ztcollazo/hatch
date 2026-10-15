@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { claimProfileHandle } from "@/features/professional-profile/actions";
 import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
 import { ProfileSectionEditor } from "@/features/professional-profile/ProfileSectionEditor";
+import { PrivateProfilePreview } from "@/features/professional-profile/PrivateProfilePreview";
+import { loadDraftProfile } from "@/features/professional-profile/profile-view";
 import { ensureOneProfessionalProfile, type SupabaseProfileClient } from "@/features/professional-profile/profiles";
 
 export default async function DashboardPage() {
@@ -12,6 +14,7 @@ export default async function DashboardPage() {
   if (!user) redirect("/auth/sign-in");
 
   const profile = await ensureOneProfessionalProfile(supabase as unknown as SupabaseProfileClient, user.id, user.email ?? "");
+  const draft = await loadDraftProfile(supabase as never, profile.id);
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-16 text-white">
@@ -33,6 +36,7 @@ export default async function DashboardPage() {
           claim={claimProfileHandle}
         />
         <ProfileSectionEditor profileId={profile.id} />
+        <PrivateProfilePreview profile={draft} />
       </section>
     </main>
   );
