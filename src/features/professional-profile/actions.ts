@@ -18,12 +18,14 @@ export async function saveProfileFullName(profileId: string, fullName: string) {
 
 export async function saveProfileDetails(profileId: string, details: ProfileDetails) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
   const { error: profileError } = await supabase.from("professional_profiles").update({
     target_role: details.targetRole.trim(), headline: details.headline.trim(), education: details.education.trim(), project: details.project.trim(),
     skill_tags: details.skillTags.split(",").map((tag) => tag.trim()).filter(Boolean), public_professional_link: details.publicProfessionalLink.trim() || null,
   }).eq("id", profileId);
   if (profileError) return { ok: false as const, error: profileError.message };
-  const { error: bioError } = await supabase.from("profile_bios").upsert({ profile_id: profileId, bio: details.bio.trim() }, { onConflict: "profile_id" });
+  const { error: bioError } = await supabase.from("profile_bios").upsert({ profile_id: profileId, owner_id: user.id, bio: details.bio.trim() }, { onConflict: "profile_id" });
   if (bioError) return { ok: false as const, error: bioError.message };
   revalidatePath("/dashboard");
   return { ok: true as const };
