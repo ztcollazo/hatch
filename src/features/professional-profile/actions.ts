@@ -25,8 +25,13 @@ export async function saveProfileDetails(profileId: string, details: ProfileDeta
     skill_tags: details.skillTags.split(",").map((tag) => tag.trim()).filter(Boolean), public_professional_link: details.publicProfessionalLink.trim() || null,
   }).eq("id", profileId);
   if (profileError) return { ok: false as const, error: profileError.message };
-  const { error: bioError } = await supabase.from("profile_bios").upsert({ profile_id: profileId, owner_id: user.id, bio: details.bio.trim() }, { onConflict: "profile_id" });
-  if (bioError) return { ok: false as const, error: bioError.message };
+  const { data: existingBio, error: bioLookupError } = await supabase.from("profile_bios").select("id").eq("profile_id", profileId).maybeSingle();
+  if (bioLookupError) return { ok: false as const, error: bioLookupError.message };
+  const bioValues = { profile_id: profileId, owner_id: user.id, bio: details.bio.trim() };
+  const bioResult = existingBio
+    ? await supabase.from("profile_bios").update({ bio: bioValues.bio }).eq("id", existingBio.id)
+    : await supabase.from("profile_bios").insert(bioValues);
+  if (bioResult.error) return { ok: false as const, error: bioResult.error.message };
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
