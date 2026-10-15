@@ -6,7 +6,6 @@ import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetai
 import { ProfileElementsForm } from "@/features/professional-profile/ProfileElementsForm";
 import { saveProfileElement } from "@/features/professional-profile/actions";
 import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
-import { ProfileSectionEditor } from "@/features/professional-profile/ProfileSectionEditor";
 import { PrivateProfilePreview } from "@/features/professional-profile/PrivateProfilePreview";
 import { loadDraftProfile } from "@/features/professional-profile/profile-view";
 import { ensureOneProfessionalProfile, type SupabaseProfileClient } from "@/features/professional-profile/profiles";
@@ -41,7 +40,6 @@ export default async function DashboardPage() {
           claim={claimProfileHandle}
         />
         <ProfileElementsForm save={saveProfileElement.bind(null, profile.id)} initialItems={draft.elements} />
-        <ProfileSectionEditor profileId={profile.id} />
         </div><PrivateProfilePreview profile={draft} /></div>
       </section>
     </main>

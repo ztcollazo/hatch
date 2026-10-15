@@ -47,13 +47,16 @@ export async function saveProfileElement(profileId: string, kind: ProfileElement
   const definition = definitions[kind];
   const fieldMap: Record<string, string> = { schoolName: "school_name", fieldOfStudy: "field_of_study", startDate: "start_date", endDate: "end_date", roleTitle: "role_title", linkType: "link_type", actionType: "action_type" };
   const row: Record<string, string | number | boolean> = { profile_id: profileId, owner_id: user.id, item_order: 0, show_on_profile_page: true, show_on_resume: true };
-  for (const [key, value] of Object.entries(values)) if (value.trim()) row[fieldMap[key] ?? key] = value.trim();
+  const itemId = values.id;
+  for (const [key, value] of Object.entries(values)) if (key !== "id" && value.trim()) row[fieldMap[key] ?? key] = value.trim();
   if (!row[definition.required]) return { ok: false as const, error: `${definition.required.replaceAll("_", " ")} is required.` };
-  const { error } = await supabase.from(definition.table).insert(row);
-  if (error) return { ok: false as const, error: error.message };
+  const result = itemId
+    ? await supabase.from(definition.table).update(row).eq("id", itemId)
+    : await supabase.from(definition.table).insert(row).select("id").single();
+  if (result.error) return { ok: false as const, error: result.error.message };
   revalidatePath("/dashboard");
-  const { data } = await supabase.from(definition.table).select("id").eq("profile_id", profileId).order("item_order", { ascending: false }).limit(1).single();
-  return { ok: true as const, item: { id: data?.id ?? crypto.randomUUID(), label: values.label ?? values.schoolName ?? values.roleTitle ?? values.url ?? "Saved item", values } };
+  const { data } = itemId ? { data: { id: itemId } } : result;
+  return { ok: true as const, item: { id: data?.id ?? crypto.randomUUID(), label: values.label ?? values.schoolName ?? values.roleTitle ?? values.url ?? "Saved item", values: Object.fromEntries(Object.entries(values).filter(([key]) => key !== "id")) } };
 }
 
 export async function claimProfileHandle(profileId: string, currentHandle: string | null, requestedHandle: string) {
