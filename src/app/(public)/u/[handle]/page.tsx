@@ -1,21 +1,31 @@
-type PublicProfilePageProps = {
-  params: Promise<{ handle: string }>;
-};
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { loadPublishedProfile } from "@/features/professional-profile/snapshots";
 
-export default async function PublicProfilePage({ params }: PublicProfilePageProps) {
+export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
   const { handle } = await params;
+  const profile = await loadPublishedProfile((await createClient()) as never, handle);
+  if (!profile) return { title: "Profile not found" };
+  return {
+    title: `${profile.full_name} · ${profile.target_role}`,
+    description: profile.headline ?? "Professional Profile",
+    robots: profile.search_indexing ? "index, follow" : "noindex, nofollow",
+    openGraph: { title: `${profile.full_name} · ${profile.target_role}`, description: profile.headline ?? "Professional Profile", type: "profile" },
+  };
+}
 
+export default async function PublicProfilePage({ params }: { params: Promise<{ handle: string }> }) {
+  const { handle } = await params;
+  const profile = await loadPublishedProfile((await createClient()) as never, handle);
+  if (!profile) notFound();
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-16 text-white">
-      <section className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-white/5 p-8">
-        <p className="text-sm font-medium uppercase tracking-wide text-emerald-200">
-          Published Profile placeholder
-        </p>
-        <h1 className="mt-4 text-4xl font-bold">/{handle}</h1>
-        <p className="mt-4 text-slate-300">
-          Future slices can render Profile Snapshot Data for this Handle here.
-        </p>
-      </section>
+    <main aria-label="Published profile" className="mx-auto max-w-3xl px-6 py-16">
+      <p className="text-sm uppercase tracking-widest">{profile.target_role}</p>
+      <h1 className="mt-3 text-5xl font-bold">{profile.full_name}</h1>
+      <p className="mt-4 text-xl">{profile.headline}</p>
+      {profile.bio && <p className="mt-8 whitespace-pre-wrap">{profile.bio}</p>}
+      {profile.projects.length > 0 && <section className="mt-10"><h2>Projects</h2>{profile.projects.map((project) => <article key={project.id}><h3>{project.title}</h3><p>{project.summary}</p></article>)}</section>}
     </main>
   );
 }
