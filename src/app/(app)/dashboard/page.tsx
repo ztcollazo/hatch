@@ -23,6 +23,7 @@ import {
   ensureOneProfessionalProfile,
   type SupabaseProfileClient,
 } from "@/features/professional-profile/profiles";
+import { TemplateSelector } from "@/features/professional-profile/TemplateSelector";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -46,6 +47,15 @@ export default async function DashboardPage() {
     draft.bio,
     profile.handle,
   ].filter(Boolean).length;
+
+  const publishProfile = async (formData: FormData) => {
+    "use server";
+    const template = formData.get("template");
+    await publishProfileSnapshot(
+      profile.id,
+      template === "project-showcase" ? "project-showcase" : "recruiter-brief",
+    );
+  };
 
   return (
     <main className="dashboard-shell min-h-screen text-[#172033]">
@@ -125,14 +135,11 @@ export default async function DashboardPage() {
               currentHandle={profile.handle ?? null}
               claim={claimProfileHandle}
             />
-            <form action={async () => { await publishProfileSnapshot(profile.id); }} className="mt-6">
-              <label className="preview-template-label">
-                Published template
-                <select defaultValue={selectedTemplate} onChange={async (event) => { await saveProfileTemplate(profile.id, event.target.value as "recruiter-brief" | "project-showcase"); }}>
-                  <option value="recruiter-brief">Recruiter Brief</option>
-                  <option value="project-showcase">Project Showcase</option>
-                </select>
-              </label>
+            <form action={publishProfile} className="mt-6">
+              <TemplateSelector
+                profileId={profile.id}
+                selectedTemplate={selectedTemplate}
+              />
               <button type="submit" className="rounded-full bg-[#3157d5] px-5 py-3 font-semibold text-white">
                 Publish Profile Page
               </button>
