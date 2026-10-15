@@ -224,6 +224,7 @@ export async function publishProfileSnapshot(
   }
   const { data, error } = await supabase.rpc("publish_profile_snapshot", {
     target_profile_id: profileId,
+    selected_template: template ?? null,
   });
   if (error) return { ok: false as const, error: error.message };
   revalidatePath("/dashboard");

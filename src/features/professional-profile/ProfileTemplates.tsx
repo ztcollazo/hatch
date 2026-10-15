@@ -22,7 +22,8 @@ function ElementCard({ kind, item }: { kind: string; item: DraftElement }) {
 }
 
 function ElementList({ elements }: { elements?: Record<string, DraftElement[]> | null }) {
-  return <div className="preview-elements">{Object.entries(elements ?? {}).map(([kind, items]) => { if (!Array.isArray(items) || items.length === 0) return null; return <section className={`preview-element-group preview-element-group--${kind}`} key={kind}><div className="preview-element-group-heading"><p className="site-eyebrow">{elementTitles[kind] ?? "Highlights"}</p><span>{String(items.length).padStart(2, "0")}</span></div>{kind === "skill" ? <div className="preview-skill-list flex gap-3">{items.map((item) => <ElementCard key={item.id} kind={kind} item={item} />)}</div> : <div className="preview-element-card-list">{items.map((item) => <ElementCard key={item.id} kind={kind} item={item} />)}</div>}</section>; })}</div>;
+  const normalized = Object.fromEntries(Object.entries(elements ?? {}).map(([kind, items]) => [kind, (Array.isArray(items) ? items : []).map((item) => ({ ...item, values: item.values ?? {} }))]));
+  return <div className="preview-elements">{Object.entries(normalized).map(([kind, items]) => { if (items.length === 0) return null; return <section className={`preview-element-group preview-element-group--${kind}`} key={kind}><div className="preview-element-group-heading"><p className="site-eyebrow">{elementTitles[kind] ?? "Highlights"}</p><span>{String(items.length).padStart(2, "0")}</span></div>{kind === "skill" ? <div className="preview-skill-list flex gap-3">{items.map((item) => <ElementCard key={item.id} kind={kind} item={item} />)}</div> : <div className="preview-element-card-list">{items.map((item) => <ElementCard key={item.id} kind={kind} item={item} />)}</div>}</section>; })}</div>;
 }
 
 function ProjectCards({ profile, showcase = false }: { profile: ProfileTemplateProfile; showcase?: boolean }) {
