@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { claimHandle } from "./handles";
 import type { SupabaseProfileClient } from "./profiles";
 import type { ProfileDetails } from "./ProfileDetailsForm";
+import type { ProfileElementInput, ProfileElementKind } from "./ProfileElementsForm";
 
 export async function saveProfileFullName(profileId: string, fullName: string) {
   const trimmedName = fullName.trim();
@@ -32,6 +33,25 @@ export async function saveProfileDetails(profileId: string, details: ProfileDeta
     ? await supabase.from("profile_bios").update({ bio: bioValues.bio }).eq("id", existingBio.id)
     : await supabase.from("profile_bios").insert(bioValues);
   if (bioResult.error) return { ok: false as const, error: bioResult.error.message };
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
+
+export async function saveProfileElement(profileId: string, kind: ProfileElementKind, values: ProfileElementInput) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
+  const definitions: Record<ProfileElementKind, { table: string; required: string }> = {
+    education: { table: "profile_education", required: "school_name" }, experience: { table: "profile_experience", required: "role_title" },
+    skill: { table: "profile_skill_tags", required: "label" }, "professional-link": { table: "profile_public_professional_links", required: "label" }, contact: { table: "profile_contact_actions", required: "label" },
+  };
+  const definition = definitions[kind];
+  const fieldMap: Record<string, string> = { schoolName: "school_name", fieldOfStudy: "field_of_study", startDate: "start_date", endDate: "end_date", roleTitle: "role_title", linkType: "link_type", actionType: "action_type" };
+  const row: Record<string, string | number | boolean> = { profile_id: profileId, owner_id: user.id, item_order: 0, show_on_profile_page: true, show_on_resume: true };
+  for (const [key, value] of Object.entries(values)) if (value.trim()) row[fieldMap[key] ?? key] = value.trim();
+  if (!row[definition.required]) return { ok: false as const, error: `${definition.required.replaceAll("_", " ")} is required.` };
+  const { error } = await supabase.from(definition.table).insert(row);
+  if (error) return { ok: false as const, error: error.message };
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
