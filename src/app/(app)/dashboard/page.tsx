@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   claimProfileHandle,
   publishProfileSnapshot,
+  saveProfileTemplate,
   saveProfileFullName,
   saveProfileDetails,
 } from "@/features/professional-profile/actions";
@@ -37,6 +38,7 @@ export default async function DashboardPage() {
     user.email ?? "",
   );
   const draft = await loadDraftProfile(supabase as never, profile.id);
+  const selectedTemplate = profile.profile_template ?? "recruiter-brief";
   const completed = [
     profile.full_name,
     profile.target_role,
@@ -124,6 +126,13 @@ export default async function DashboardPage() {
               claim={claimProfileHandle}
             />
             <form action={async () => { await publishProfileSnapshot(profile.id); }} className="mt-6">
+              <label className="preview-template-label">
+                Published template
+                <select defaultValue={selectedTemplate} onChange={async (event) => { await saveProfileTemplate(profile.id, event.target.value as "recruiter-brief" | "project-showcase"); }}>
+                  <option value="recruiter-brief">Recruiter Brief</option>
+                  <option value="project-showcase">Project Showcase</option>
+                </select>
+              </label>
               <button type="submit" className="rounded-full bg-[#3157d5] px-5 py-3 font-semibold text-white">
                 Publish Profile Page
               </button>

@@ -1,6 +1,14 @@
 alter table public.professional_profiles
   add column if not exists search_indexing boolean not null default false;
 
+alter table public.professional_profiles
+  add column if not exists profile_template text not null default 'recruiter-brief';
+alter table public.professional_profiles
+  drop constraint if exists professional_profiles_profile_template_check;
+alter table public.professional_profiles
+  add constraint professional_profiles_profile_template_check
+  check (profile_template in ('recruiter-brief', 'project-showcase'));
+
 create table if not exists public.profile_snapshots (
   id uuid primary key default gen_random_uuid(),
   profile_id uuid not null references public.professional_profiles(id) on delete cascade,
@@ -45,6 +53,7 @@ begin
       'target_role', profile_row.target_role, 'headline', profile_row.headline,
       'public_professional_link', profile_row.public_professional_link,
       'search_indexing', profile_row.search_indexing,
+      'profile_template', profile_row.profile_template,
       'bio', coalesce((select bio from profile_bios where profile_id = profile_row.id and show_on_profile_page), ''),
       'projects', coalesce((select jsonb_agg(to_jsonb(p) order by p.item_order) from profile_projects p where p.profile_id = profile_row.id and p.show_on_profile_page), '[]'::jsonb),
       'elements', jsonb_build_object(

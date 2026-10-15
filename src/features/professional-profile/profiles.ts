@@ -9,6 +9,7 @@ export type ProfessionalProfileRecord = {
   project?: string | null;
   skill_tags?: string[] | null;
   public_professional_link?: string | null;
+  profile_template?: "recruiter-brief" | "project-showcase";
 };
 
 export type SupabaseProfileClient = {

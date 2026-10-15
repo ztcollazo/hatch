@@ -192,6 +192,22 @@ export async function saveProfileProject(
   };
 }
 
+export async function saveProfileTemplate(
+  profileId: string,
+  template: "recruiter-brief" | "project-showcase",
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
+  const { error } = await supabase
+    .from("professional_profiles")
+    .update({ profile_template: template })
+    .eq("id", profileId);
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
+
 export async function publishProfileSnapshot(profileId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

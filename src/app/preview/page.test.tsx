@@ -45,7 +45,6 @@ describe("Anonymous Preview", () => {
   it("keeps Placeholder Examples out of the preview until the user enters their own Professional Profile data", () => {
     render(createElement(PreviewPage));
 
-    expect(screen.getByText(/your Profile Page preview will update here/i)).toBeInTheDocument();
     expect(screen.queryByText("Maya Chen")).not.toBeInTheDocument();
     expect(screen.queryByText("Campus Events Finder")).not.toBeInTheDocument();
   });

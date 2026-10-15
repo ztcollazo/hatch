@@ -3,6 +3,7 @@ import type { DraftProfile } from "./profile-view";
 export type ProfileSnapshot = DraftProfile & {
   public_professional_link: string | null;
   search_indexing: boolean;
+  profile_template: "recruiter-brief" | "project-showcase";
 };
 
 export type SnapshotClient = {

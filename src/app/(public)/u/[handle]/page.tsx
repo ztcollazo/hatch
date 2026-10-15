@@ -21,11 +21,24 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   if (!profile) notFound();
   return (
     <main aria-label="Published profile" className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-sm uppercase tracking-widest">{profile.target_role}</p>
-      <h1 className="mt-3 text-5xl font-bold">{profile.full_name}</h1>
-      <p className="mt-4 text-xl">{profile.headline}</p>
-      {profile.bio && <p className="mt-8 whitespace-pre-wrap">{profile.bio}</p>}
-      {profile.projects.length > 0 && <section className="mt-10"><h2>Projects</h2>{profile.projects.map((project) => <article key={project.id}><h3>{project.title}</h3><p>{project.summary}</p></article>)}</section>}
+      {profile.profile_template === "project-showcase" ? (
+        <>
+          <p className="text-sm uppercase tracking-widest">Project Showcase</p>
+          <h1 className="mt-3 text-5xl font-bold">{profile.full_name}</h1>
+          <p className="mt-4 text-xl">{profile.headline}</p>
+          {profile.bio && <p className="mt-8 whitespace-pre-wrap">{profile.bio}</p>}
+          <section className="mt-10"><h2>Selected work</h2>{profile.projects.map((project) => <article key={project.id}><h3>{project.title}</h3><p>{project.summary}</p></article>)}</section>
+        </>
+      ) : (
+        <>
+          <p className="text-sm uppercase tracking-widest">Professional Profile</p>
+          <h1 className="mt-3 text-5xl font-bold">{profile.full_name}</h1>
+          <p className="mt-4 text-xl">{profile.target_role}</p>
+          <p className="mt-2">{profile.headline}</p>
+          {profile.bio && <p className="mt-8 whitespace-pre-wrap">{profile.bio}</p>}
+          {profile.projects.length > 0 && <section className="mt-10"><h2>Selected projects</h2>{profile.projects.map((project) => <article key={project.id}><h3>{project.title}</h3><p>{project.summary}</p></article>)}</section>}
+        </>
+      )}
     </main>
   );
 }
