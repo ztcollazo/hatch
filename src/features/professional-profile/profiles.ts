@@ -5,6 +5,10 @@ export type ProfessionalProfileRecord = {
   target_role?: string | null;
   headline?: string | null;
   handle?: string | null;
+  education?: string | null;
+  project?: string | null;
+  skill_tags?: string[] | null;
+  public_professional_link?: string | null;
 };
 
 export type SupabaseProfileClient = {

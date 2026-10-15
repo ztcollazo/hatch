@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { claimProfileHandle, saveProfileFullName } from "@/features/professional-profile/actions";
+import { claimProfileHandle, saveProfileFullName, saveProfileDetails } from "@/features/professional-profile/actions";
 import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
+import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetailsForm";
 import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
 import { ProfileSectionEditor } from "@/features/professional-profile/ProfileSectionEditor";
 import { PrivateProfilePreview } from "@/features/professional-profile/PrivateProfilePreview";
@@ -31,7 +32,8 @@ export default async function DashboardPage() {
           <dt className="text-sm font-semibold text-slate-400">Full name</dt>
           <dd className="mt-1 text-xl">{profile.full_name}</dd>
         </dl>
-        <ProfileIdentityForm initialFullName={profile.full_name ?? ""} save={(fullName) => saveProfileFullName(profile.id, fullName)} />
+        <ProfileIdentityForm initialFullName={profile.full_name ?? ""} save={saveProfileFullName.bind(null, profile.id)} />
+        <ProfileDetailsForm initialDetails={{ targetRole: profile.target_role ?? "", headline: profile.headline ?? "", education: profile.education ?? "", project: profile.project ?? "", skillTags: (profile.skill_tags ?? []).join(", "), publicProfessionalLink: profile.public_professional_link ?? "", bio: "" }} save={saveProfileDetails.bind(null, profile.id)} />
         <HandleClaimForm
           profileId={profile.id}
           currentHandle={profile.handle ?? null}
