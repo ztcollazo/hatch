@@ -22,8 +22,7 @@ export async function saveProfileDetails(profileId: string, details: ProfileDeta
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
   const { error: profileError } = await supabase.from("professional_profiles").update({
-    target_role: details.targetRole.trim(), headline: details.headline.trim(), education: details.education.trim(), project: details.project.trim(),
-    skill_tags: details.skillTags.split(",").map((tag) => tag.trim()).filter(Boolean), public_professional_link: details.publicProfessionalLink.trim() || null,
+    target_role: details.targetRole.trim(), headline: details.headline.trim(), public_professional_link: details.publicProfessionalLink.trim() || null,
   }).eq("id", profileId);
   if (profileError) return { ok: false as const, error: profileError.message };
   const { data: existingBio, error: bioLookupError } = await supabase.from("profile_bios").select("id").eq("profile_id", profileId).maybeSingle();
@@ -53,7 +52,8 @@ export async function saveProfileElement(profileId: string, kind: ProfileElement
   const { error } = await supabase.from(definition.table).insert(row);
   if (error) return { ok: false as const, error: error.message };
   revalidatePath("/dashboard");
-  return { ok: true as const };
+  const { data } = await supabase.from(definition.table).select("id").eq("profile_id", profileId).order("item_order", { ascending: false }).limit(1).single();
+  return { ok: true as const, item: { id: data?.id ?? crypto.randomUUID(), label: values.label ?? values.schoolName ?? values.roleTitle ?? values.url ?? "Saved item" } };
 }
 
 export async function claimProfileHandle(profileId: string, currentHandle: string | null, requestedHandle: string) {

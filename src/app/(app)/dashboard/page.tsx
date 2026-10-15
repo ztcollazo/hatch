@@ -35,13 +35,13 @@ export default async function DashboardPage() {
           <dd className="mt-1 text-xl">{profile.full_name}</dd>
         </dl>
         <ProfileIdentityForm initialFullName={profile.full_name ?? ""} save={saveProfileFullName.bind(null, profile.id)} />
-        <ProfileDetailsForm initialDetails={{ targetRole: profile.target_role ?? "", headline: profile.headline ?? "", education: profile.education ?? "", project: profile.project ?? "", skillTags: (profile.skill_tags ?? []).join(", "), publicProfessionalLink: profile.public_professional_link ?? "", bio: "" }} save={saveProfileDetails.bind(null, profile.id)} />
+        <ProfileDetailsForm initialDetails={{ targetRole: profile.target_role ?? "", headline: profile.headline ?? "", publicProfessionalLink: profile.public_professional_link ?? "", bio: "" }} save={saveProfileDetails.bind(null, profile.id)} />
         <HandleClaimForm
           profileId={profile.id}
           currentHandle={profile.handle ?? null}
           claim={claimProfileHandle}
         />
-        <ProfileElementsForm save={saveProfileElement.bind(null, profile.id)} />
+        <ProfileElementsForm save={saveProfileElement.bind(null, profile.id)} initialItems={draft.elements} />
         <ProfileSectionEditor profileId={profile.id} />
         <PrivateProfilePreview profile={draft} />
       </section>

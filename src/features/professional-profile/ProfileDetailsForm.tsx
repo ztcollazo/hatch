@@ -5,9 +5,6 @@ import { useState, useTransition } from "react";
 export type ProfileDetails = {
   targetRole: string;
   headline: string;
-  education: string;
-  project: string;
-  skillTags: string;
   publicProfessionalLink: string;
   bio: string;
 };
@@ -17,9 +14,6 @@ type Props = { initialDetails: ProfileDetails; save: (details: ProfileDetails) =
 const fields: Array<{ key: keyof ProfileDetails; label: string; multiline?: boolean }> = [
   { key: "targetRole", label: "Target role" },
   { key: "headline", label: "Headline" },
-  { key: "education", label: "Education" },
-  { key: "project", label: "Featured project" },
-  { key: "skillTags", label: "Skill tags", },
   { key: "publicProfessionalLink", label: "Public professional link" },
   { key: "bio", label: "Bio", multiline: true },
 ];
