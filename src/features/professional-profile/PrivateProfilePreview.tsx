@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import type { DraftElement, DraftProfile, DraftProject } from "./profile-view";
+import { ProjectShowcaseTemplate, RecruiterBriefTemplate } from "./ProfileTemplates";
 
 type Template = "recruiter-brief" | "project-showcase";
 type Props = { profile: DraftProfile };
@@ -235,7 +236,12 @@ export function PrivateProfilePreview({ profile }: Props) {
       <div
         className={`preview-viewport ${isShowcase ? "showcase-site" : "recruiter-site"}`}
       >
-        <article className="preview-site">
+        {isShowcase ? (
+          <ProjectShowcaseTemplate profile={profile} />
+        ) : (
+          <RecruiterBriefTemplate profile={profile} />
+        )}
+        {/*
           {isShowcase ? (
             <>
               <header className="showcase-hero">
@@ -291,7 +297,7 @@ export function PrivateProfilePreview({ profile }: Props) {
               </div>
             </>
           )}
-        </article>
+        </article> */}
       </div>
     </section>
   );
