@@ -9,7 +9,7 @@ export type ProfessionalProfileRecord = {
 
 export type SupabaseProfileClient = {
   from: (table: "professional_profiles") => {
-    update: (values: { handle: string }) => {
+    update: (values: { handle?: string; full_name?: string }) => {
       eq: (column: "id", value: string) => {
         is: (column: "handle", value: null) => {
           select: (columns: string) => {
