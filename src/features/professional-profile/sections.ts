@@ -23,9 +23,26 @@ export type OutputVisibility = {
 
 type SupabaseSectionClient = {
   from: (table: ProfileSectionTable) => {
-    insert: (values: Record<string, unknown>) => { select: (columns: string) => { single: () => Promise<{ data: unknown; error: { message: string } | null }> } };
-    update: (values: Record<string, unknown>) => { eq: (column: "id", value: string) => Promise<{ error: { message: string } | null }> };
-    delete: () => { eq: (column: "id", value: string) => Promise<{ error: { message: string } | null }> };
+    insert: (values: Record<string, unknown>) => {
+      select: (columns: string) => {
+        single: () => Promise<{
+          data: unknown;
+          error: { message: string } | null;
+        }>;
+      };
+    };
+    update: (values: Record<string, unknown>) => {
+      eq: (
+        column: "id",
+        value: string,
+      ) => Promise<{ error: { message: string } | null }>;
+    };
+    delete: () => {
+      eq: (
+        column: "id",
+        value: string,
+      ) => Promise<{ error: { message: string } | null }>;
+    };
   };
 };
 
@@ -53,22 +70,41 @@ export async function createProfileSectionItem(
   return data;
 }
 
-export async function updateOutputVisibility(supabase: SupabaseSectionClient, table: ProfileSectionTable, itemId: string, visibility: OutputVisibility) {
-  const { error } = await supabase.from(table).update({
-    show_on_profile_page: visibility.showOnProfilePage,
-    show_on_resume: visibility.showOnResume,
-  }).eq("id", itemId);
+export async function updateOutputVisibility(
+  supabase: SupabaseSectionClient,
+  table: ProfileSectionTable,
+  itemId: string,
+  visibility: OutputVisibility,
+) {
+  const { error } = await supabase
+    .from(table)
+    .update({
+      show_on_profile_page: visibility.showOnProfilePage,
+      show_on_resume: visibility.showOnResume,
+    })
+    .eq("id", itemId);
   if (error) throw new Error(error.message);
 }
 
-export async function reorderProfileSectionItems(supabase: SupabaseSectionClient, table: ProfileSectionTable, orderedIds: string[]) {
+export async function reorderProfileSectionItems(
+  supabase: SupabaseSectionClient,
+  table: ProfileSectionTable,
+  orderedIds: string[],
+) {
   for (const [itemOrder, id] of orderedIds.entries()) {
-    const { error } = await supabase.from(table).update({ item_order: itemOrder }).eq("id", id);
+    const { error } = await supabase
+      .from(table)
+      .update({ item_order: itemOrder })
+      .eq("id", id);
     if (error) throw new Error(error.message);
   }
 }
 
-export async function removeProfileSectionItem(supabase: SupabaseSectionClient, table: ProfileSectionTable, itemId: string) {
+export async function removeProfileSectionItem(
+  supabase: SupabaseSectionClient,
+  table: ProfileSectionTable,
+  itemId: string,
+) {
   const { error } = await supabase.from(table).delete().eq("id", itemId);
   if (error) throw new Error(error.message);
 }

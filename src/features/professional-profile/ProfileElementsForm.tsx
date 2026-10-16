@@ -1,11 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 export type ProfileElementKind =
-  | "education"
-  | "experience"
-  | "skill"
-  | "professional-link"
-  | "contact";
+  "education" | "experience" | "skill" | "professional-link" | "contact";
 export type ProfileElementInput = Record<string, string> & { id?: string };
 export type SavedProfileElement = {
   id: string;

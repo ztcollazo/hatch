@@ -8,8 +8,14 @@ describe("Section Editing Dashboard", () => {
     const user = userEvent.setup();
     render(createElement(ProfileSectionEditor, { profileId: "profile-1" }));
 
-    await user.type(screen.getByLabelText(/project title/i), "Campus Events Finder");
-    await user.type(screen.getByLabelText(/project summary/i), "Helps students find events.");
+    await user.type(
+      screen.getByLabelText(/project title/i),
+      "Campus Events Finder",
+    );
+    await user.type(
+      screen.getByLabelText(/project summary/i),
+      "Helps students find events.",
+    );
     await user.click(screen.getByRole("button", { name: /add project/i }));
 
     expect(screen.getByText("Campus Events Finder")).toBeInTheDocument();
@@ -28,9 +34,17 @@ describe("Section Editing Dashboard", () => {
     const user = userEvent.setup();
     render(createElement(ProfileSectionEditor, { profileId: "profile-1" }));
 
-    await user.type(screen.getByLabelText(/profile image alt text/i), "Maya smiling outdoors");
-    await user.type(screen.getByLabelText(/profile image storage path/i), "profiles/profile-1/profile-image.jpg");
+    await user.type(
+      screen.getByLabelText(/profile image alt text/i),
+      "Maya smiling outdoors",
+    );
+    await user.type(
+      screen.getByLabelText(/profile image storage path/i),
+      "profiles/profile-1/profile-image.jpg",
+    );
 
-    expect(screen.getByText(/profile image metadata ready/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/profile image metadata ready/i),
+    ).toBeInTheDocument();
   });
 });

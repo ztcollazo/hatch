@@ -6,7 +6,11 @@ import type { HandleClaimResult } from "./handles";
 type Props = {
   profileId: string;
   currentHandle: string | null;
-  claim: (profileId: string, currentHandle: string | null, requestedHandle: string) => Promise<HandleClaimResult>;
+  claim: (
+    profileId: string,
+    currentHandle: string | null,
+    requestedHandle: string,
+  ) => Promise<HandleClaimResult>;
 };
 
 export function HandleClaimForm({ profileId, currentHandle, claim }: Props) {
@@ -18,9 +22,13 @@ export function HandleClaimForm({ profileId, currentHandle, claim }: Props) {
   if (claimedHandle) {
     return (
       <section className="mt-8 rounded-2xl bg-slate-900 p-5">
-        <p className="text-sm font-semibold text-slate-400">Public Profile Route</p>
+        <p className="text-sm font-semibold text-slate-400">
+          Public Profile Route
+        </p>
         <p className="mt-2 text-2xl font-bold">/u/{claimedHandle}</p>
-        <p className="mt-2 text-sm text-slate-300">Handle changes are not supported in the MVP.</p>
+        <p className="mt-2 text-sm text-slate-300">
+          Handle changes are not supported in the MVP.
+        </p>
       </section>
     );
   }
@@ -47,9 +55,20 @@ export function HandleClaimForm({ profileId, currentHandle, claim }: Props) {
           placeholder="maya-chen"
         />
       </label>
-      <p className="mt-2 text-sm text-slate-300">Claim a lowercase, URL-safe Handle for your future /u/handle Public Profile Route.</p>
-      {error && <p role="alert" className="mt-3 text-red-200">{error}</p>}
-      <button className="mt-4 rounded-full bg-emerald-300 px-5 py-3 font-semibold text-slate-950" disabled={isPending} type="submit">
+      <p className="mt-2 text-sm text-slate-300">
+        Claim a lowercase, URL-safe Handle for your future /u/handle Public
+        Profile Route.
+      </p>
+      {error && (
+        <p role="alert" className="mt-3 text-red-200">
+          {error}
+        </p>
+      )}
+      <button
+        className="mt-4 rounded-full bg-emerald-300 px-5 py-3 font-semibold text-slate-950"
+        disabled={isPending}
+        type="submit"
+      >
         Claim Handle
       </button>
     </form>

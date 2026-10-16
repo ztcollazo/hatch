@@ -3,7 +3,10 @@
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import type { DraftElement, DraftProfile, DraftProject } from "./profile-view";
-import { ProjectShowcaseTemplate, RecruiterBriefTemplate } from "./ProfileTemplates";
+import {
+  ProjectShowcaseTemplate,
+  RecruiterBriefTemplate,
+} from "./ProfileTemplates";
 
 type Template = "recruiter-brief" | "project-showcase";
 type Props = { profile: DraftProfile };
@@ -169,7 +172,16 @@ function ProjectCards({
           {showcase && <span className="project-number">0{index + 1}</span>}
           <h3>{project.title}</h3>
           {project.summary && <p>{project.summary}</p>}
-          {project.url && <a href={project.url} target="_blank" rel="noreferrer" className="font-bold text-xs mt-4">View project</a>}
+          {project.url && (
+            <a
+              href={project.url}
+              target="_blank"
+              rel="noreferrer"
+              className="font-bold text-xs mt-4"
+            >
+              View project
+            </a>
+          )}
         </article>
       ))}
     </div>

@@ -137,10 +137,16 @@ export default async function DashboardPage() {
             />
             <form action={publishProfile} className="mt-6">
               <TemplateSelector selectedTemplate={selectedTemplate} />
-              <button type="submit" className="rounded-full bg-[#3157d5] px-5 py-3 font-semibold text-white">
+              <button
+                type="submit"
+                className="rounded-full bg-[#3157d5] px-5 py-3 font-semibold text-white"
+              >
                 Publish Profile Page
               </button>
-              <p className="mt-2 text-sm text-[#6b7280]">Publishing makes the completed checklist visible at /u/{profile.handle ?? "your-handle"}.</p>
+              <p className="mt-2 text-sm text-[#6b7280]">
+                Publishing makes the completed checklist visible at /u/
+                {profile.handle ?? "your-handle"}.
+              </p>
             </form>
           </div>
           <div id="elements" className="editor-stack">

@@ -197,7 +197,9 @@ export async function saveProfileTemplate(
   template: "recruiter-brief" | "project-showcase",
 ) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
   const { error } = await supabase
     .from("professional_profiles")
@@ -213,14 +215,17 @@ export async function publishProfileSnapshot(
   template?: "recruiter-brief" | "project-showcase",
 ) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
   if (template) {
     const { error: templateError } = await supabase
       .from("professional_profiles")
       .update({ profile_template: template })
       .eq("id", profileId);
-    if (templateError) return { ok: false as const, error: templateError.message };
+    if (templateError)
+      return { ok: false as const, error: templateError.message };
   }
   const { data, error } = await supabase.rpc("publish_profile_snapshot", {
     target_profile_id: profileId,

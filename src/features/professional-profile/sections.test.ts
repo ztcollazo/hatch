@@ -1,19 +1,31 @@
 import { describe, expect, it, vi } from "vitest";
-import { createProfileSectionItem, removeProfileSectionItem, reorderProfileSectionItems, updateOutputVisibility } from "./sections";
+import {
+  createProfileSectionItem,
+  removeProfileSectionItem,
+  reorderProfileSectionItems,
+  updateOutputVisibility,
+} from "./sections";
 
 describe("Profile Section storage", () => {
   it("creates typed Project section items with Item Order and Output Visibility", async () => {
-    const single = vi.fn().mockResolvedValue({ data: { id: "project-1" }, error: null });
+    const single = vi
+      .fn()
+      .mockResolvedValue({ data: { id: "project-1" }, error: null });
     const insert = vi.fn(() => ({ select: () => ({ single }) }));
     const supabase = { from: vi.fn(() => ({ insert })) };
 
-    const result = await createProfileSectionItem(supabase as never, "profile-1", "projects", {
-      title: "Campus Events Finder",
-      summary: "Helps students find events.",
-      itemOrder: 2,
-      showOnProfilePage: true,
-      showOnResume: false,
-    });
+    const result = await createProfileSectionItem(
+      supabase as never,
+      "profile-1",
+      "projects",
+      {
+        title: "Campus Events Finder",
+        summary: "Helps students find events.",
+        itemOrder: 2,
+        showOnProfilePage: true,
+        showOnResume: false,
+      },
+    );
 
     expect(result).toEqual({ id: "project-1" });
     expect(supabase.from).toHaveBeenCalledWith("profile_projects");
@@ -32,17 +44,30 @@ describe("Profile Section storage", () => {
     const update = vi.fn(() => ({ eq }));
     const supabase = { from: vi.fn(() => ({ update })) };
 
-    await updateOutputVisibility(supabase as never, "profile_projects", "project-1", { showOnProfilePage: false, showOnResume: true });
+    await updateOutputVisibility(
+      supabase as never,
+      "profile_projects",
+      "project-1",
+      { showOnProfilePage: false, showOnResume: true },
+    );
 
-    expect(update).toHaveBeenCalledWith({ show_on_profile_page: false, show_on_resume: true });
+    expect(update).toHaveBeenCalledWith({
+      show_on_profile_page: false,
+      show_on_resume: true,
+    });
     expect(eq).toHaveBeenCalledWith("id", "project-1");
   });
 
   it("reorders section items using explicit Item Order values", async () => {
-    const update = vi.fn(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) }));
+    const update = vi.fn(() => ({
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    }));
     const supabase = { from: vi.fn(() => ({ update })) };
 
-    await reorderProfileSectionItems(supabase as never, "profile_projects", ["project-2", "project-1"]);
+    await reorderProfileSectionItems(supabase as never, "profile_projects", [
+      "project-2",
+      "project-1",
+    ]);
 
     expect(update).toHaveBeenNthCalledWith(1, { item_order: 0 });
     expect(update).toHaveBeenNthCalledWith(2, { item_order: 1 });
@@ -53,7 +78,11 @@ describe("Profile Section storage", () => {
     const remove = vi.fn(() => ({ eq }));
     const supabase = { from: vi.fn(() => ({ delete: remove })) };
 
-    await removeProfileSectionItem(supabase as never, "profile_projects", "project-1");
+    await removeProfileSectionItem(
+      supabase as never,
+      "profile_projects",
+      "project-1",
+    );
 
     expect(remove).toHaveBeenCalled();
     expect(eq).toHaveBeenCalledWith("id", "project-1");

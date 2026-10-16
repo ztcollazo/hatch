@@ -1,5 +1,7 @@
-export type HandleValidationResult = { ok: true; handle: string } | { ok: false; error: string };
-export type HandleClaimResult = { ok: true; handle: string } | { ok: false; error: string };
+export type HandleValidationResult =
+  { ok: true; handle: string } | { ok: false; error: string };
+export type HandleClaimResult =
+  { ok: true; handle: string } | { ok: false; error: string };
 
 const RESERVED_HANDLES = new Set([
   "auth",
@@ -16,10 +18,19 @@ const RESERVED_HANDLES = new Set([
 export function validateHandle(input: string): HandleValidationResult {
   const handle = input.trim().toLowerCase();
 
-  if (handle !== input.trim()) return { ok: false, error: "Handle must use lowercase URL-safe characters." };
-  if (RESERVED_HANDLES.has(handle)) return { ok: false, error: "That Reserved Handle cannot be claimed." };
+  if (handle !== input.trim())
+    return {
+      ok: false,
+      error: "Handle must use lowercase URL-safe characters.",
+    };
+  if (RESERVED_HANDLES.has(handle))
+    return { ok: false, error: "That Reserved Handle cannot be claimed." };
   if (!/^[a-z0-9](?:[a-z0-9._-]{1,28}[a-z0-9])$/.test(handle)) {
-    return { ok: false, error: "Handle must be 3-30 lowercase letters, numbers, dots, underscores, or hyphens, and start and end with a letter or number." };
+    return {
+      ok: false,
+      error:
+        "Handle must be 3-30 lowercase letters, numbers, dots, underscores, or hyphens, and start and end with a letter or number.",
+    };
   }
 
   return { ok: true, handle };
@@ -28,10 +39,19 @@ export function validateHandle(input: string): HandleValidationResult {
 type HandleSupabaseClient = {
   from: (table: "professional_profiles") => {
     update: (values: { handle: string }) => {
-      eq: (column: "id", value: string) => {
-        is: (column: "handle", value: null) => {
+      eq: (
+        column: "id",
+        value: string,
+      ) => {
+        is: (
+          column: "handle",
+          value: null,
+        ) => {
           select: (columns: string) => {
-            single: () => Promise<{ data: { handle: string } | null; error: { code?: string; message: string } | null }>;
+            single: () => Promise<{
+              data: { handle: string } | null;
+              error: { code?: string; message: string } | null;
+            }>;
           };
         };
       };
@@ -45,7 +65,8 @@ export async function claimHandle(
   currentHandle: string | null,
   requestedHandle: string,
 ): Promise<HandleClaimResult> {
-  if (currentHandle) return { ok: false, error: "Handle changes are not supported in the MVP." };
+  if (currentHandle)
+    return { ok: false, error: "Handle changes are not supported in the MVP." };
 
   const validation = validateHandle(requestedHandle);
   if (!validation.ok) return validation;
@@ -58,9 +79,14 @@ export async function claimHandle(
     .select("handle")
     .single();
 
-  if (error?.code === "23505") return { ok: false, error: "That Handle is already claimed. Try another." };
+  if (error?.code === "23505")
+    return { ok: false, error: "That Handle is already claimed. Try another." };
   if (error) return { ok: false, error: error.message };
-  if (!data) return { ok: false, error: "Handle could not be claimed. Refresh and try again." };
+  if (!data)
+    return {
+      ok: false,
+      error: "Handle could not be claimed. Refresh and try again.",
+    };
 
   return { ok: true, handle: data.handle };
 }

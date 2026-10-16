@@ -15,28 +15,50 @@ export type ProfessionalProfileRecord = {
 export type SupabaseProfileClient = {
   from: (table: "professional_profiles") => {
     update: (values: { handle?: string; full_name?: string }) => {
-      eq: (column: "id", value: string) => {
-        is: (column: "handle", value: null) => {
+      eq: (
+        column: "id",
+        value: string,
+      ) => {
+        is: (
+          column: "handle",
+          value: null,
+        ) => {
           select: (columns: string) => {
-            single: () => Promise<{ data: { handle: string } | null; error: { code?: string; message: string } | null }>;
+            single: () => Promise<{
+              data: { handle: string } | null;
+              error: { code?: string; message: string } | null;
+            }>;
           };
         };
       };
     };
     select: (columns: string) => {
-      eq: (column: "owner_id", value: string) => {
-        maybeSingle: () => Promise<{ data: ProfessionalProfileRecord | null; error: { message: string; code?: string } | null }>;
+      eq: (
+        column: "owner_id",
+        value: string,
+      ) => {
+        maybeSingle: () => Promise<{
+          data: ProfessionalProfileRecord | null;
+          error: { message: string; code?: string } | null;
+        }>;
       };
     };
     insert: (values: { owner_id: string; full_name: string }) => {
       select: (columns: string) => {
-        single: () => Promise<{ data: ProfessionalProfileRecord | null; error: { message: string } | null }>;
+        single: () => Promise<{
+          data: ProfessionalProfileRecord | null;
+          error: { message: string } | null;
+        }>;
       };
     };
   };
 };
 
-export async function ensureOneProfessionalProfile(supabase: SupabaseProfileClient, userId: string, email: string) {
+export async function ensureOneProfessionalProfile(
+  supabase: SupabaseProfileClient,
+  userId: string,
+  email: string,
+) {
   const existing = await supabase
     .from("professional_profiles")
     .select("*")
@@ -53,6 +75,9 @@ export async function ensureOneProfessionalProfile(supabase: SupabaseProfileClie
     .select("*")
     .single();
 
-  if (created.error || !created.data) throw new Error(created.error?.message ?? "Could not create Professional Profile.");
+  if (created.error || !created.data)
+    throw new Error(
+      created.error?.message ?? "Could not create Professional Profile.",
+    );
   return created.data;
 }

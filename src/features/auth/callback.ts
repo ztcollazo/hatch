@@ -5,7 +5,10 @@ type TokenMagicLinkCallbackParams = {
   type?: string | null;
 };
 
-export async function completeTokenMagicLinkSignIn({ tokenHash, type }: TokenMagicLinkCallbackParams) {
+export async function completeTokenMagicLinkSignIn({
+  tokenHash,
+  type,
+}: TokenMagicLinkCallbackParams) {
   if (!tokenHash) return;
 
   const supabase = await createClient();
