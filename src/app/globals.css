@@ -244,6 +244,17 @@ a:focus-visible {
   transform: scale(0.98);
   transition: opacity 160ms ease, transform 160ms ease;
 }
+.profile-element-section {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.profile-element-section.is-dragging {
+  opacity: 0.55;
+  transform: scale(0.99);
+}
+.profile-element-section.is-drag-over {
+  transform: translateY(8px);
+  box-shadow: 0 -4px 0 var(--blue);
+}
 .element-card.is-drag-over,
 .tag.is-drag-over {
   transform: translateY(5px);

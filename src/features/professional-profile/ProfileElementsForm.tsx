@@ -111,6 +111,7 @@ export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reo
   const [isPending, startTransition] = useTransition();
   const [dragged, setDragged] = useState<{ kind: ProfileElementKind; id: string } | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
+  const [sectionOrder, setSectionOrder] = useState<ProfileElementKind[]>(definitions.map(({ kind }) => kind));
   const reorderedIds = (kind: ProfileElementKind, fromId: string, toId: string) => { const list = [...(items[kind] ?? [])]; const from = list.findIndex((item) => item.id === fromId); const to = list.findIndex((item) => item.id === toId); const [item] = list.splice(from, 1); list.splice(to, 0, item); return list.map((entry) => entry.id); };
   const beginDrag = (kind: ProfileElementKind, id: string, event: React.DragEvent) => {
     setDragged({ kind, id });
@@ -123,6 +124,24 @@ export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reo
   };
   const finishDrag = () => { setDragged(null); setDragOver(null); };
   const move = (kind: ProfileElementKind, fromId: string, toId: string) => { if (fromId === toId) return; setItems((current) => { const list = [...(current[kind] ?? [])]; const from = list.findIndex((item) => item.id === fromId); const to = list.findIndex((item) => item.id === toId); const [item] = list.splice(from, 1); list.splice(to, 0, item); return { ...current, [kind]: list }; }); };
+  const moveSection = async (from: ProfileElementKind, to: ProfileElementKind) => {
+    if (from === to) return;
+    const next = [...sectionOrder];
+    next.splice(next.indexOf(from), 1);
+    next.splice(next.indexOf(to), 0, from);
+    setSectionOrder(next);
+    await reorderSections(next);
+  };
+  const moveItem = async (kind: ProfileElementKind, from: string, to: string) => {
+    if (from === to) return;
+    const next = [...(items[kind] ?? [])];
+    const fromIndex = next.findIndex((item) => item.id === from);
+    const toIndex = next.findIndex((item) => item.id === to);
+    const [item] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, item);
+    setItems((current) => ({ ...current, [kind]: next }));
+    await reorderItems(kind, next.map((entry) => entry.id));
+  };
   const update = (kind: ProfileElementKind, key: string, value: string) =>
     setValues((current) => ({
       ...current,
@@ -140,10 +159,13 @@ export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reo
   return (
     <>
       <div className="mt-5 grid gap-5">
-        {definitions.map(({ kind, title, fields }) => (
-          <div draggable onDragStart={(event) => beginDrag(kind, kind, event)} onDragEnd={finishDrag} onDragOver={(event) => event.preventDefault()} onDrop={async () => { if (dragged && dragged.kind !== kind) { const order = definitions.map((definition) => definition.kind); const from = order.indexOf(dragged.kind); const to = order.indexOf(kind); order.splice(from, 1); order.splice(to, 0, dragged.kind); await reorderSections(order); } finishDrag(); }}
+        {sectionOrder.map((kind) => {
+          const definition = definitions.find((entry) => entry.kind === kind)!;
+          const { title, fields } = definition;
+          return (
+          <div draggable onDragStart={(event) => beginDrag(kind, kind, event)} onDragEnd={finishDrag} onDragOver={(event) => { event.preventDefault(); setDragOver(kind); }} onDrop={async () => { if (dragged && dragged.kind !== kind) await moveSection(dragged.kind, kind); finishDrag(); }}
             key={kind}
-            className="element-group profile-element-section rounded-xl p-5"
+            className={`element-group profile-element-section rounded-xl p-5 ${dragged?.id === kind ? "is-dragging" : ""} ${dragOver === kind ? "is-drag-over" : ""}`}
           >
             <div className="flex justify-between">
               <h3 className="font-semibold">{title}</h3>
@@ -164,7 +186,7 @@ export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reo
                         onDragStart={(event) => beginDrag(kind, item.id, event)}
                         onDragEnd={finishDrag}
                         onDragOver={(event) => { event.preventDefault(); setDragOver(item.id); }}
-                        onDrop={async () => { if (dragged?.kind === kind) { move(kind, dragged.id, item.id); await reorderItems(kind, reorderedIds(kind, dragged.id, item.id)); } finishDrag(); }}
+                        onDrop={async () => { if (dragged?.kind === kind) await moveItem(kind, dragged.id, item.id); finishDrag(); }}
                         className={`tag w-max hover:bg-blue-600/30! ${dragged?.id === item.id ? "is-dragging" : ""} ${dragOver === item.id ? "is-drag-over" : ""}`}
                         onClick={() => editItem(kind, item)}
                         key={item.id}
@@ -173,7 +195,7 @@ export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reo
                       </li>
                     ))
                   : items[kind]?.map((item) => (
-                      <li draggable onDragStart={(event) => beginDrag(kind, item.id, event)} onDragEnd={finishDrag} onDragOver={(event) => { event.preventDefault(); setDragOver(item.id); }} onDrop={async () => { if (dragged?.kind === kind) { move(kind, dragged.id, item.id); await reorderItems(kind, reorderedIds(kind, dragged.id, item.id)); } finishDrag(); }} key={item.id} className={`element-card ${dragged?.id === item.id ? "is-dragging" : ""} ${dragOver === item.id ? "is-drag-over" : ""}`}>
+                      <li draggable onDragStart={(event) => beginDrag(kind, item.id, event)} onDragEnd={finishDrag} onDragOver={(event) => { event.preventDefault(); setDragOver(item.id); }} onDrop={async () => { if (dragged?.kind === kind) await moveItem(kind, dragged.id, item.id); finishDrag(); }} key={item.id} className={`element-card ${dragged?.id === item.id ? "is-dragging" : ""} ${dragOver === item.id ? "is-drag-over" : ""}`}>
                         <div className="flex items-start justify-between gap-3"><span className="drag-handle" aria-label="Drag to reorder" title="Drag to reorder" aria-hidden="true">⋮⋮</span>
                           <div>
                             <p className="element-title">{item.label}</p>
@@ -334,7 +356,8 @@ export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reo
               </button>
             </form>
           </div>
-        ))}
+          );
+        })}
       </div>
       {message && (
         <p role="status" className="mt-4 text-sm">
