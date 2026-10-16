@@ -227,7 +227,31 @@ a:focus-visible {
   color: #7b808b !important;
   font-size: 12px;
 }
+.drag-handle {
+  flex: 0 0 16px;
+  color: #9aa3b2;
+  cursor: grab;
+  font-size: 18px;
+  letter-spacing: -4px;
+  line-height: 1;
+  user-select: none;
+}
+.element-card:active,
+.tag:active { cursor: grabbing; }
+.element-card.is-dragging,
+.tag.is-dragging {
+  opacity: 0.45;
+  transform: scale(0.98);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.element-card.is-drag-over,
+.tag.is-drag-over {
+  transform: translateY(5px);
+  box-shadow: 0 -4px 0 var(--blue);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
 .element-card {
+
   border: 1px solid #d8d5cd;
   border-radius: 10px;
   background: #faf9f6;
