@@ -27,12 +27,10 @@ describe("Handle validation", () => {
 
 describe("Handle claim", () => {
   it("claims one globally unique Handle for a Professional Profile", async () => {
-    const single = vi
-      .fn()
-      .mockResolvedValue({
-        data: { id: "profile-1", handle: "maya-chen" },
-        error: null,
-      });
+    const single = vi.fn().mockResolvedValue({
+      data: { id: "profile-1", handle: "maya-chen" },
+      error: null,
+    });
     const select = vi.fn(() => ({ single }));
     const is = vi.fn(() => ({ select }));
     const eq = vi.fn(() => ({ is }));
@@ -66,12 +64,10 @@ describe("Handle claim", () => {
   });
 
   it("returns useful feedback when the Handle is already claimed", async () => {
-    const single = vi
-      .fn()
-      .mockResolvedValue({
-        data: null,
-        error: { code: "23505", message: "duplicate key" },
-      });
+    const single = vi.fn().mockResolvedValue({
+      data: null,
+      error: { code: "23505", message: "duplicate key" },
+    });
     const supabase = {
       from: vi.fn(() => ({
         update: () => ({

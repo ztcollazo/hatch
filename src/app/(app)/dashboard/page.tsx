@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import {
   claimProfileHandle,
   publishProfileSnapshot,
-  saveProfileTemplate,
   saveProfileFullName,
   saveProfileDetails,
   reorderProfileElements,
@@ -21,7 +20,7 @@ import {
   ensureOneProfessionalProfile,
   type SupabaseProfileClient,
 } from "@/features/professional-profile/profiles";
-import { TemplateSelector } from "@/features/professional-profile/TemplateSelector";
+import { PublishSnapshotForm } from "@/features/professional-profile/PublishSnapshotForm";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -46,13 +45,38 @@ export default async function DashboardPage() {
     profile.handle,
   ].filter(Boolean).length;
 
+  // Keep the action boundary in the server component. Passing a bound imported
+  // action through a client component can lose the profile-specific arguments;
+  // these wrappers bind the profile once and remain proper server actions.
   const publishProfile = async (formData: FormData) => {
     "use server";
     const template = formData.get("template");
-    await publishProfileSnapshot(
+    const result = await publishProfileSnapshot(
       profile.id,
       template === "project-showcase" ? "project-showcase" : "recruiter-brief",
     );
+    if (!result.ok) return result;
+    return { ok: true as const, publishedAt: new Date().toISOString() };
+  };
+  const reorderItems = async (
+    kind: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind,
+    ids: string[],
+  ) => {
+    "use server";
+    return reorderProfileElements(profile.id, kind, ids);
+  };
+  const reorderSections = async (
+    kinds: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind[],
+  ) => {
+    "use server";
+    return reorderProfileSections(profile.id, kinds);
+  };
+  const saveElement = async (
+    kind: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind,
+    values: import("@/features/professional-profile/ProfileElementsForm").ProfileElementInput,
+  ) => {
+    "use server";
+    return saveProfileElement(profile.id, kind, values);
   };
 
   return (
@@ -133,19 +157,11 @@ export default async function DashboardPage() {
               currentHandle={profile.handle ?? null}
               claim={claimProfileHandle}
             />
-            <form action={publishProfile} className="mt-6">
-              <TemplateSelector selectedTemplate={selectedTemplate} />
-              <button
-                type="submit"
-                className="rounded-full bg-[#3157d5] px-5 py-3 font-semibold text-white"
-              >
-                Publish Profile Page
-              </button>
-              <p className="mt-2 text-sm text-[#6b7280]">
-                Publishing makes the completed checklist visible at /u/
-                {profile.handle ?? "your-handle"}.
-              </p>
-            </form>
+            <PublishSnapshotForm
+              action={publishProfile}
+              handle={profile.handle ?? null}
+              selectedTemplate={selectedTemplate}
+            />
           </div>
           <div id="elements" className="editor-stack">
             <div className="section-heading">
@@ -160,10 +176,22 @@ export default async function DashboardPage() {
             </div>
             <ProfileElementsForm
               profileId={profile.id}
-              reorderItems={reorderProfileElements.bind(null, profile.id)}
-              reorderSections={reorderProfileSections.bind(null, profile.id)}
-              save={saveProfileElement.bind(null, profile.id)}
-              initialItems={{ ...draft.elements, project: draft.projects.map((project) => ({ id: project.id, label: project.title, values: { title: project.title, summary: project.summary ?? "", url: project.url ?? "" } })) }}
+              reorderItemsAction={reorderItems}
+              reorderSectionsAction={reorderSections}
+              saveAction={saveElement}
+              initialSectionOrder={draft.sectionOrder as import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind[]}
+              initialItems={{
+                ...draft.elements,
+                project: draft.projects.map((project) => ({
+                  id: project.id,
+                  label: project.title,
+                  values: {
+                    title: project.title,
+                    summary: project.summary ?? "",
+                    url: project.url ?? "",
+                  },
+                })),
+              }}
             />
           </div>
         </section>

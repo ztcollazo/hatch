@@ -7,6 +7,7 @@ export type ProfileTemplateProfile = {
   bio: string;
   projects?: DraftProject[] | null;
   elements?: Record<string, DraftElement[]> | null;
+  sectionOrder?: string[];
   public_professional_link?: string | null;
 };
 
@@ -86,12 +87,15 @@ function ElementCard({ kind, item }: { kind: string; item: DraftElement }) {
       </div>
       {values.length > 0 && (
         <dl className="preview-element-facts">
-          {values.map(([key, value]) => fieldLabels[key] && (
-            <div key={key}>
-              <dt>{fieldLabels[key]}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
+          {values.map(
+            ([key, value]) =>
+              fieldLabels[key] && (
+                <div key={key}>
+                  <dt>{fieldLabels[key]}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ),
+          )}
         </dl>
       )}
     </article>
@@ -100,21 +104,31 @@ function ElementCard({ kind, item }: { kind: string; item: DraftElement }) {
 
 function ElementList({
   elements,
+  sectionOrder,
 }: {
   elements?: Record<string, DraftElement[]> | null;
+  sectionOrder?: string[];
 }) {
   const normalized = Object.fromEntries(
     Object.entries(elements ?? {}).map(([kind, items]) => [
       kind,
-      (Array.isArray(items) ? items : []).map((item) => ({
-        ...item,
-        values: item.values ?? {},
-      })),
+      (Array.isArray(items) ? items : [])
+        .map((item) => ({
+          ...item,
+          item_order: item.item_order ?? 0,
+          values: item.values ?? {},
+        }))
+        .sort((a, b) => a.item_order - b.item_order),
     ]),
   );
+  const orderedKinds = [
+    ...(sectionOrder ?? Object.keys(normalized)),
+    ...Object.keys(normalized).filter((kind) => !(sectionOrder ?? []).includes(kind)),
+  ];
   return (
     <div className="preview-elements">
-      {Object.entries(normalized).map(([kind, items]) => {
+      {orderedKinds.map((kind) => {
+        const items = normalized[kind] ?? [];
         if (items.length === 0) return null;
         return (
           <section
@@ -218,7 +232,7 @@ export function RecruiterBriefTemplate({
           </div>
           <ProjectCards profile={profile} />
         </section>
-        <ElementList elements={profile.elements} />
+        <ElementList elements={profile.elements} sectionOrder={profile.sectionOrder} />
       </div>
     </article>
   );
@@ -250,7 +264,7 @@ export function ProjectShowcaseTemplate({
           </div>
           <ProjectCards profile={profile} showcase />
         </section>
-        <ElementList elements={profile.elements} />
+        <ElementList elements={profile.elements} sectionOrder={profile.sectionOrder} />
       </div>
     </article>
   );

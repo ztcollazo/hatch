@@ -1,19 +1,32 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { DragDropProvider } from "@dnd-kit/react";
+import type { DragEndEvent } from "@dnd-kit/react";
+import {
+  isSortableOperation,
+  useSortable,
+} from "@dnd-kit/react/sortable";
 
 export type ProfileElementKind =
-  "education" | "experience" | "skill" | "professional-link" | "contact" | "project";
+  | "education"
+  | "experience"
+  | "skill"
+  | "professional-link"
+  | "contact"
+  | "project";
 export type ProfileElementInput = Record<string, string> & { id?: string };
 export type SavedProfileElement = {
   id: string;
   label: string;
   values: ProfileElementInput;
 };
+type Result = { ok: true } | { ok: false; error: string };
 type Props = {
   profileId: string;
-  reorderItems: (kind: ProfileElementKind, ids: string[]) => Promise<{ ok: true } | { ok: false; error: string }>;
-  reorderSections: (kinds: ProfileElementKind[]) => Promise<{ ok: true } | { ok: false; error: string }>;
-  save: (
+  reorderItemsAction: (kind: ProfileElementKind, ids: string[]) => Promise<Result>;
+  reorderSectionsAction: (kinds: ProfileElementKind[]) => Promise<Result>;
+  initialSectionOrder?: ProfileElementKind[];
+  saveAction: (
     kind: ProfileElementKind,
     values: ProfileElementInput,
   ) => Promise<
@@ -21,11 +34,12 @@ type Props = {
   >;
   initialItems?: Partial<Record<ProfileElementKind, SavedProfileElement[]>>;
 };
-const definitions: Array<{
+type Definition = {
   kind: ProfileElementKind;
   title: string;
   fields: Array<[string, string]>;
-}> = [
+};
+const definitions: Definition[] = [
   {
     kind: "education",
     title: "Education",
@@ -49,7 +63,15 @@ const definitions: Array<{
     ],
   },
   { kind: "skill", title: "Skill tag", fields: [["label", "Skill"]] },
-  { kind: "project", title: "Project", fields: [["title", "Title"], ["summary", "Summary"], ["url", "URL"]] },
+  {
+    kind: "project",
+    title: "Project",
+    fields: [
+      ["title", "Title"],
+      ["summary", "Summary"],
+      ["url", "URL"],
+    ],
+  },
   {
     kind: "professional-link",
     title: "Professional link",
@@ -84,7 +106,6 @@ const typeOptions: Record<string, Array<[string, string]>> = {
     ["other", "Other"],
   ],
 };
-
 const displayNames: Record<string, string> = {
   schoolName: "School",
   degree: "Degree",
@@ -98,8 +119,154 @@ const displayNames: Record<string, string> = {
   linkType: "Type",
   actionType: "Action",
 };
-export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reorderSections }: Props) {
+
+function SortableHandle({
+  id,
+  group,
+  index,
+  children,
+  className,
+}: {
+  id: string;
+  group: string;
+  index: number;
+  children: (handleRef: (element: Element | null) => void) => React.ReactNode;
+  className: string;
+}) {
+  const { ref, handleRef } = useSortable({ id, group, index });
+  return (
+    <div ref={ref} className={className}>
+      {children(handleRef)}
+    </div>
+  );
+}
+
+function SectionDragHandle({
+  handleRef,
+}: {
+  handleRef: (element: Element | null) => void;
+}) {
+  return (
+    <span
+      ref={handleRef}
+      className="section-drag-handle"
+      role="button"
+      tabIndex={0}
+      aria-label="Drag section to reorder"
+      title="Drag section to reorder"
+    >
+      ⠿
+    </span>
+  );
+}
+
+function ItemCard({
+  item,
+  kind,
+  index,
+  onEdit,
+}: {
+  item: SavedProfileElement;
+  kind: ProfileElementKind;
+  index: number;
+  onEdit: () => void;
+}) {
+  const { ref, handleRef } = useSortable({
+    id: `item:${kind}:${item.id}`,
+    group: `items:${kind}`,
+    index,
+  });
+  return (
+    <li
+      ref={ref}
+      className="element-card"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span
+          ref={handleRef}
+          className="drag-handle"
+          role="button"
+          tabIndex={0}
+          aria-label={`Drag ${item.label} to reorder`}
+          title="Drag to reorder"
+        >
+          ⠿
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="element-title">{item.label}</p>
+          {kind === "professional-link" && item.values.linkType && (
+            <span className="element-subtitle">
+              {typeOptions.linkType.find(
+                ([v]) => v === item.values.linkType,
+              )?.[1] ?? "Link"}
+            </span>
+          )}
+          {kind === "contact" && item.values.actionType && (
+            <span className="element-subtitle">
+              {typeOptions.actionType.find(
+                ([v]) => v === item.values.actionType,
+              )?.[1] ?? "Contact"}
+            </span>
+          )}
+          {kind === "education" && (
+            <p className="element-subtitle">
+              {[item.values.degree, item.values.fieldOfStudy]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          )}
+          {kind === "experience" && (
+            <p className="element-subtitle">
+              {[
+                item.values.organization,
+                [item.values.startDate, item.values.endDate]
+                  .filter(Boolean)
+                  .join(" – "),
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          )}
+        </div>
+        <button type="button" className="edit-button" onClick={onEdit}>
+          Edit
+        </button>
+      </div>
+      {kind !== "skill" && (
+        <dl className="element-details">
+          {Object.entries(item.values)
+            .filter(
+              ([key, value]) =>
+                key !== "id" &&
+                value &&
+                !(
+                  ["schoolName", "roleTitle", "label"].includes(key) &&
+                  value === item.label
+                ),
+            )
+            .map(([key, value]) => (
+              <div key={key}>
+                <dt>{displayNames[key] ?? key}</dt>
+                <dd className={key === "url" ? "break-all" : ""}>{value}</dd>
+              </div>
+            ))}
+        </dl>
+      )}
+    </li>
+  );
+}
+
+export function ProfileElementsForm({
+  saveAction,
+  initialItems = {},
+  reorderItemsAction,
+  reorderSectionsAction,
+  initialSectionOrder,
+}: Props) {
   const [items, setItems] = useState(initialItems);
+  const [sectionOrder, setSectionOrder] = useState(
+    initialSectionOrder ?? definitions.map(({ kind }) => kind),
+  );
   const [values, setValues] = useState<
     Record<ProfileElementKind, ProfileElementInput>
   >(
@@ -110,262 +277,226 @@ export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reo
       >,
   );
   const [message, setMessage] = useState<string | null>(null);
+  const [reorderMessage, setReorderMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [dragged, setDragged] = useState<{ kind: ProfileElementKind; id: string } | null>(null);
-  const [dragOver, setDragOver] = useState<string | null>(null);
-  const [sectionOrder, setSectionOrder] = useState<ProfileElementKind[]>(definitions.map(({ kind }) => kind));
-  const reorderedIds = (kind: ProfileElementKind, fromId: string, toId: string) => { const list = [...(items[kind] ?? [])]; const from = list.findIndex((item) => item.id === fromId); const to = list.findIndex((item) => item.id === toId); const [item] = list.splice(from, 1); list.splice(to, 0, item); return list.map((entry) => entry.id); };
-  const beginDrag = (kind: ProfileElementKind, id: string, event: React.DragEvent) => {
-    setDragged({ kind, id });
-    setDragOver(null);
-    const image = document.createElement("canvas");
-    image.width = 1;
-    image.height = 1;
-    event.dataTransfer.setDragImage(image, 0, 0);
-    event.dataTransfer.effectAllowed = "move";
-  };
-  const finishDrag = () => { setDragged(null); setDragOver(null); };
-  const move = (kind: ProfileElementKind, fromId: string, toId: string) => { if (fromId === toId) return; setItems((current) => { const list = [...(current[kind] ?? [])]; const from = list.findIndex((item) => item.id === fromId); const to = list.findIndex((item) => item.id === toId); const [item] = list.splice(from, 1); list.splice(to, 0, item); return { ...current, [kind]: list }; }); };
-  const moveSection = async (from: ProfileElementKind, to: ProfileElementKind) => {
-    if (from === to) return;
-    const next = [...sectionOrder];
-    next.splice(next.indexOf(from), 1);
-    next.splice(next.indexOf(to), 0, from);
-    setSectionOrder(next);
-    await reorderSections(next);
-  };
-  const moveItem = async (kind: ProfileElementKind, from: string, to: string) => {
-    if (from === to) return;
-    const next = [...(items[kind] ?? [])];
-    const fromIndex = next.findIndex((item) => item.id === from);
-    const toIndex = next.findIndex((item) => item.id === to);
-    const [item] = next.splice(fromIndex, 1);
-    next.splice(toIndex, 0, item);
-    setItems((current) => ({ ...current, [kind]: next }));
-    await reorderItems(kind, next.map((entry) => entry.id));
-  };
+  const latestItems = useRef(items);
+  const latestSectionOrder = useRef(sectionOrder);
+  useEffect(() => {
+    latestItems.current = items;
+    latestSectionOrder.current = sectionOrder;
+  }, [items, sectionOrder]);
+
   const update = (kind: ProfileElementKind, key: string, value: string) =>
-    setValues((current) => ({
-      ...current,
-      [kind]: { ...current[kind], [key]: value },
-    }));
+    setValues((c) => ({ ...c, [kind]: { ...c[kind], [key]: value } }));
   const editItem = (kind: ProfileElementKind, item: SavedProfileElement) => {
-    setValues((current) => ({
-      ...current,
-      [kind]: { ...item.values, id: item.id },
-    }));
+    setValues((c) => ({ ...c, [kind]: { ...item.values, id: item.id } }));
     document
       .getElementById(`element-form-${kind}`)
       ?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
+  const move = (event: DragEndEvent) => {
+    if (event.canceled || !event.operation.source || !event.operation.target) return;
+    if (!isSortableOperation(event.operation)) return;
+    const source = event.operation.source;
+    // The optimistic sorting plugin intentionally makes the source the final
+    // drop target after it has rearranged the DOM. Therefore source.id and
+    // target.id can be identical at dragend. The source sortable's projected
+    // index is the authoritative destination; do not use target.id to decide
+    // whether a reorder happened.
+    const sourceId = String(source.id);
+    const projectedIndex = source.sortable.index;
+    const initialIndex = source.sortable.initialIndex;
+    if (sourceId.startsWith("section:")) {
+      const kind = sourceId.slice(8) as ProfileElementKind;
+      if (projectedIndex === initialIndex) return;
+      const next = [...latestSectionOrder.current];
+      const fromIndex = next.indexOf(kind);
+      if (fromIndex < 0 || projectedIndex < 0 || projectedIndex >= next.length) return;
+      next.splice(fromIndex, 1);
+      next.splice(projectedIndex, 0, kind);
+      setSectionOrder(next);
+      startTransition(() => {
+        void reorderSectionsAction(next)
+          .then((result) => {
+            setReorderMessage(
+              result.ok ? "Section order updated" : result.error,
+            );
+          })
+          .catch((error: unknown) => {
+            setReorderMessage(
+              error instanceof Error ? error.message : "Unable to save section order.",
+            );
+          });
+      });
+      return;
+    }
+    if (sourceId.startsWith("item:")) {
+      const [, kind, itemId] = sourceId.split(":");
+      const current = latestItems.current[kind as ProfileElementKind] ?? [];
+      const fromIndex = current.findIndex((item) => item.id === itemId);
+      if (fromIndex < 0 || projectedIndex === initialIndex) return;
+      const next = [...current];
+      const [entry] = next.splice(fromIndex, 1);
+      if (!entry || projectedIndex < 0 || projectedIndex >= next.length + 1) return;
+      next.splice(projectedIndex, 0, entry);
+      setItems((c) => ({ ...c, [kind]: next }));
+      startTransition(() => {
+        void reorderItemsAction(
+          kind as ProfileElementKind,
+          next.map((x) => x.id),
+        )
+          .then((result) => {
+            setReorderMessage(
+              result.ok
+                ? `${definitions.find((x) => x.kind === kind)?.title ?? "Section"} order updated`
+                : result.error,
+            );
+          })
+          .catch((error: unknown) => {
+            setReorderMessage(
+              error instanceof Error ? error.message : "Unable to save item order.",
+            );
+          });
+      });
+    }
+  };
   return (
-    <>
+    <DragDropProvider onDragEnd={move}>
+      <div className="reorder-guide" role="note">
+        <span className="reorder-guide-icon" aria-hidden="true">
+          ⠿
+        </span>
+        <div>
+          <strong>Arrange your story</strong>
+          <span>
+            Drag a section or item by its handle to change the order. Changes
+            save automatically.
+          </span>
+        </div>
+      </div>
       <div className="mt-5 grid gap-5">
-        {sectionOrder.map((kind) => {
-          const definition = definitions.find((entry) => entry.kind === kind)!;
-          const { title, fields } = definition;
+        {sectionOrder.map((kind, index) => {
+          const definition = definitions.find((x) => x.kind === kind)!;
+          const saved = items[kind] ?? [];
           return (
-          <div draggable onDragStart={(event) => beginDrag(kind, kind, event)} onDragEnd={finishDrag} onDragOver={(event) => { event.preventDefault(); setDragOver(kind); }} onDrop={async () => { if (dragged && dragged.kind !== kind) await moveSection(dragged.kind, kind); finishDrag(); }}
-            key={kind}
-            className={`element-group profile-element-section rounded-xl p-5 ${dragged?.id === kind ? "is-dragging" : ""} ${dragOver === kind ? "is-drag-over" : ""}`}
-          >
-            <div className="flex justify-between">
-              <h3 className="font-semibold">{title}</h3>
-              <span className="element-count">
-                {items[kind]?.length ?? 0} saved
-              </span>
-            </div>
-            {items[kind]?.length ? (
-              <ul
-                className={
-                  "mt-3 gap-3" + (kind === "skill" ? " flex" : " grid")
-                }
+            <SortableHandle
+                key={kind}
+                id={`section:${kind}`}
+                group="sections"
+                index={index}
+                className="element-group profile-element-section rounded-xl p-5"
               >
-                {kind === "skill"
-                  ? items[kind]?.map((item) => (
-                      <li
-                        draggable
-                        onDragStart={(event) => beginDrag(kind, item.id, event)}
-                        onDragEnd={finishDrag}
-                        onDragOver={(event) => { event.preventDefault(); setDragOver(item.id); }}
-                        onDrop={async () => { if (dragged?.kind === kind) await moveItem(kind, dragged.id, item.id); finishDrag(); }}
-                        className={`tag w-max hover:bg-blue-600/30! ${dragged?.id === item.id ? "is-dragging" : ""} ${dragOver === item.id ? "is-drag-over" : ""}`}
-                        onClick={() => editItem(kind, item)}
+                {(handleRef) => <>
+                <div className="section-reorder-header">
+                  <div className="section-title-row">
+                    <SectionDragHandle handleRef={handleRef} />
+                    <h3 className="font-semibold">{definition.title}</h3>
+                  </div>
+                  <span className="element-count">{saved.length} saved</span>
+                </div>
+                {saved.length ? (
+                  <ul
+                    className={`mt-3 gap-3 grid`}
+                  >
+                    {saved.map((item, i) => (
+                      <ItemCard
                         key={item.id}
-                      >
-                        {item.label}
-                      </li>
-                    ))
-                  : items[kind]?.map((item) => (
-                      <li draggable onDragStart={(event) => beginDrag(kind, item.id, event)} onDragEnd={finishDrag} onDragOver={(event) => { event.preventDefault(); setDragOver(item.id); }} onDrop={async () => { if (dragged?.kind === kind) await moveItem(kind, dragged.id, item.id); finishDrag(); }} key={item.id} className={`element-card ${dragged?.id === item.id ? "is-dragging" : ""} ${dragOver === item.id ? "is-drag-over" : ""}`}>
-                        <div className="flex items-start justify-between gap-3"><span className="drag-handle" aria-label="Drag to reorder" title="Drag to reorder" aria-hidden="true">⋮⋮</span>
-                          <div>
-                            <p className="element-title">{item.label}</p>
-                            {(kind === "professional-link" ||
-                              kind === "contact") &&
-                              item.values.linkType && (
-                                <span className="element-subtitle">
-                                  {typeOptions.linkType.find(
-                                    ([value]) => value === item.values.linkType,
-                                  )?.[1] ?? "Link"}
-                                </span>
-                              )}
-                            {kind === "contact" && item.values.actionType && (
-                              <span className="element-subtitle">
-                                {typeOptions.actionType.find(
-                                  ([value]) => value === item.values.actionType,
-                                )?.[1] ?? "Contact"}
-                              </span>
-                            )}
-                            {kind === "education" && (
-                              <p className="element-subtitle">
-                                {[item.values.degree, item.values.fieldOfStudy]
-                                  .filter(Boolean)
-                                  .join(" · ")}
-                              </p>
-                            )}
-                            {kind === "experience" && (
-                              <p className="element-subtitle">
-                                {[
-                                  item.values.organization,
-                                  [item.values.startDate, item.values.endDate]
-                                    .filter(Boolean)
-                                    .join(" – "),
-                                ]
-                                  .filter(Boolean)
-                                  .join(" · ")}
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            className="edit-button"
-                            onClick={() => editItem(kind, item)}
-                          >
-                            Edit
-                          </button>
-                        </div>
-                        <dl className="element-details">
-                          {Object.entries(item.values)
-                            .filter(
-                              ([key, value]) =>
-                                key !== "id" &&
-                                value &&
-                                !(
-                                  key === "schoolName" && value === item.label
-                                ) &&
-                                !(
-                                  key === "roleTitle" && value === item.label
-                                ) &&
-                                !(key === "label" && value === item.label),
-                            )
-                            .map(([key, value]) => (
-                              <div key={key}>
-                                <dt>{displayNames[key] ?? key}</dt>
-                                <dd
-                                  className={key === "url" ? "break-all" : ""}
-                                >
-                                  {value}
-                                </dd>
-                              </div>
-                            ))}
-                        </dl>
-                      </li>
+                        item={item}
+                        kind={kind}
+                        index={i}
+                        onEdit={() => editItem(kind, item)}
+                      />
                     ))}
-              </ul>
-            ) : (
-              <p className="empty-element">
-                No saved {title.toLowerCase()} yet.
-              </p>
-            )}
-            <form
-              id={`element-form-${kind}`}
-              className="element-form mt-4 pt-4"
-              onSubmit={(event) => {
-                event.preventDefault();
-                setMessage(null);
-                startTransition(async () => {
-                  const result = await save(kind, values[kind]);
-                  setMessage(
-                    result.ok
-                      ? `${title} ${values[kind].id ? "updated" : "saved"}.`
-                      : result.error,
-                  );
-                  if (result.ok) {
-                    setValues((current) => ({ ...current, [kind]: {} }));
-                    setItems((current) => ({
-                      ...current,
-                      [kind]: current[kind]?.some(
-                        (item) => item.id === result.item.id,
-                      )
-                        ? current[kind]?.map((item) =>
-                            item.id === result.item.id ? result.item : item,
-                          )
-                        : [...(current[kind] ?? []), result.item],
-                    }));
-                  }
-                });
-              }}
-            >
-              <p className="form-kicker">
-                {values[kind].id ? `Editing ${title}` : `Add ${title}`}
-              </p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {fields.map(([key, label]) => (
-                  <label key={key} className="block text-sm font-medium">
-                    {label}
-                    {key === "summary" ? (
-                      <textarea
-                        className="mt-1 min-h-20 w-full rounded-lg px-3 py-2"
-                        value={values[kind][key] ?? ""}
-                        onChange={(event) =>
-                          update(kind, key, event.target.value)
-                        }
-                      />
-                    ) : typeOptions[key] ? (
-                      <select
-                        className="mt-1 w-full rounded-lg px-3 py-2"
-                        value={values[kind][key] ?? ""}
-                        onChange={(event) =>
-                          update(kind, key, event.target.value)
-                        }
-                      >
-                        <option value="">Choose a type</option>
-                        {typeOptions[key].map(([value, optionLabel]) => (
-                          <option key={value} value={value}>
-                            {optionLabel}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        className="mt-1 w-full rounded-lg px-3 py-2"
-                        value={values[kind][key] ?? ""}
-                        onChange={(event) =>
-                          update(kind, key, event.target.value)
-                        }
-                      />
-                    )}
-                  </label>
-                ))}
-              </div>
-              <button
-                className="save-element mt-4 rounded-full px-4 py-2 text-sm"
-                type="submit"
-                disabled={isPending}
-              >
-                {values[kind].id ? "Update" : "Save"} {title}
-              </button>
-            </form>
-          </div>
+                  </ul>
+                ) : (
+                  <p className="empty-element">
+                    No saved {definition.title.toLowerCase()} yet.
+                  </p>
+                )}
+                <form
+                  id={`element-form-${kind}`}
+                  className="element-form mt-4 pt-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setMessage(null);
+                    startTransition(async () => {
+                      const editing = Boolean(values[kind].id);
+                      const result = await saveAction(kind, values[kind]);
+                      setMessage(
+                        result.ok
+                          ? `${definition.title} ${editing ? "updated" : "saved"}.`
+                          : result.error,
+                      );
+                      if (result.ok) {
+                        setValues((c) => ({ ...c, [kind]: {} }));
+                        setItems((c) => ({
+                          ...c,
+                          [kind]: c[kind]?.some((x) => x.id === result.item.id)
+                            ? c[kind]!.map((x) =>
+                                x.id === result.item.id ? result.item : x,
+                              )
+                            : [...(c[kind] ?? []), result.item],
+                        }));
+                      }
+                    });
+                  }}
+                >
+                  <p className="form-kicker">
+                    {values[kind].id
+                      ? `Editing ${definition.title}`
+                      : `Add ${definition.title}`}
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {definition.fields.map(([key, label]) => (
+                      <label key={key} className="block text-sm font-medium">
+                        {label}
+                        {key === "summary" ? (
+                          <textarea
+                            className="mt-1 min-h-20 w-full rounded-lg px-3 py-2"
+                            value={values[kind][key] ?? ""}
+                            onChange={(e) => update(kind, key, e.target.value)}
+                          />
+                        ) : typeOptions[key] ? (
+                          <select
+                            className="mt-1 w-full rounded-lg px-3 py-2"
+                            value={values[kind][key] ?? ""}
+                            onChange={(e) => update(kind, key, e.target.value)}
+                          >
+                            <option value="">Choose a type</option>
+                            {typeOptions[key].map(([v, l]) => (
+                              <option key={v} value={v}>
+                                {l}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            className="mt-1 w-full rounded-lg px-3 py-2"
+                            value={values[kind][key] ?? ""}
+                            onChange={(e) => update(kind, key, e.target.value)}
+                          />
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                  <button
+                    className="save-element mt-4 rounded-full px-4 py-2 text-sm"
+                    type="submit"
+                    disabled={isPending}
+                  >
+                    {values[kind].id ? "Update" : "Save"} {definition.title}
+                  </button>
+                </form>
+                </>}
+            </SortableHandle>
           );
         })}
       </div>
-      {message && (
-        <p role="status" className="mt-4 text-sm">
-          {message}
+      {(message || reorderMessage) && (
+        <p role="status" className="editor-feedback mt-4 text-sm">
+          {message || reorderMessage}
         </p>
       )}
-    </>
+    </DragDropProvider>
   );
 }

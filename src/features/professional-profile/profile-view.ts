@@ -1,6 +1,7 @@
 export type DraftElement = {
   id: string;
   label: string;
+  item_order: number;
   values: Record<string, string>;
 };
 
@@ -21,6 +22,7 @@ export type DraftProfile = {
   bio: string;
   projects: DraftProject[];
   elements: Record<string, DraftElement[]>;
+  sectionOrder: string[];
 };
 
 type QueryResult = { data: unknown; error: { message: string } | null };
@@ -68,6 +70,32 @@ export async function loadDraftProfile(
     .eq("profile_id", profileId)
     .maybeSingle();
   if (bioResult.error) throw new Error(bioResult.error.message);
+  const sectionSettingsResult = await supabase
+    .from("profile_section_settings")
+    .select("section_key,section_order")
+    .eq("profile_id", profileId)
+    .order("section_order", { ascending: true });
+  if (sectionSettingsResult.error)
+    throw new Error(sectionSettingsResult.error.message);
+  const defaultSectionOrder = [
+    "education",
+    "experience",
+    "skill",
+    "project",
+    "professional-link",
+    "contact",
+  ];
+  const savedSectionOrder = (
+    (sectionSettingsResult.data ?? []) as Array<{
+      section_key: string;
+      section_order: number;
+    }>
+  ).map(({ section_key }) => section_key);
+  const sectionOrder = [
+    ...savedSectionOrder,
+    ...defaultSectionOrder.filter((kind) => !savedSectionOrder.includes(kind)),
+  ];
+
   const elements: Record<string, DraftElement[]> = {};
   for (const [kind, table, label, columns] of [
     [
@@ -110,6 +138,7 @@ export async function loadDraftProfile(
       return {
         id: String(item.id),
         label: String(item[label] ?? "Saved item"),
+        item_order: Number(item.item_order ?? 0),
         values,
       };
     });
@@ -124,5 +153,6 @@ export async function loadDraftProfile(
     bio: (bioResult.data as { bio?: string } | null)?.bio ?? "",
     projects: (projectsResult.data as DraftProject[] | null) ?? [],
     elements,
+    sectionOrder,
   };
 }

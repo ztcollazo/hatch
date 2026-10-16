@@ -208,24 +208,60 @@ export async function reorderProfileElements(
   kind: ProfileElementKind,
   orderedIds: string[],
 ) {
+  console.log("Reordering profile elements:", { profileId, kind, orderedIds });
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
   for (const [itemOrder, id] of orderedIds.entries()) {
-    const { error } = await supabase.from(elementTables[kind]).update({ item_order: itemOrder }).eq("id", id).eq("profile_id", profileId);
+    const { data, error } = await supabase
+      .from(elementTables[kind])
+      .update({ item_order: itemOrder })
+      .eq("id", id)
+      .eq("profile_id", profileId)
+      .select("id")
+      .maybeSingle();
     if (error) return { ok: false as const, error: error.message };
+    if (!data)
+      return {
+        ok: false as const,
+        error: "The item could not be found for this profile.",
+      };
   }
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
 
-export async function reorderProfileSections(profileId: string, orderedKinds: ProfileElementKind[]) {
+export async function reorderProfileSections(
+  profileId: string,
+  orderedKinds: ProfileElementKind[],
+) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
   for (const [sectionOrder, sectionKey] of orderedKinds.entries()) {
-    const { error } = await supabase.from("profile_section_settings").upsert({ profile_id: profileId, owner_id: user.id, section_key: sectionKey, section_order: sectionOrder }, { onConflict: "profile_id,section_key" });
+    const { data, error } = await supabase
+      .from("profile_section_settings")
+      .upsert(
+        {
+          profile_id: profileId,
+          owner_id: user.id,
+          section_key: sectionKey,
+          section_order: sectionOrder,
+        },
+        { onConflict: "profile_id,section_key" },
+      )
+      .select("section_key")
+      .maybeSingle();
     if (error) return { ok: false as const, error: error.message };
+    if (!data)
+      return {
+        ok: false as const,
+        error: "The section order could not be saved for this profile.",
+      };
   }
   revalidatePath("/dashboard");
   return { ok: true as const };
