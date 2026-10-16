@@ -95,6 +95,7 @@ export async function saveProfileElement(
       required: "label",
     },
     contact: { table: "profile_contact_actions", required: "label" },
+    project: { table: "profile_projects", required: "title" },
   };
   const definition = definitions[kind];
   const fieldMap: Record<string, string> = {
@@ -140,6 +141,7 @@ export async function saveProfileElement(
         values.label ??
         values.schoolName ??
         values.roleTitle ??
+        values.title ??
         values.url ??
         "Saved item",
       values: Object.fromEntries(
@@ -198,6 +200,7 @@ const elementTables: Record<ProfileElementKind, string> = {
   skill: "profile_skill_tags",
   "professional-link": "profile_public_professional_links",
   contact: "profile_contact_actions",
+  project: "profile_projects",
 };
 
 export async function reorderProfileElements(

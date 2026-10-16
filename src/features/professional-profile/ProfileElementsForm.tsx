@@ -1,10 +1,8 @@
 "use client";
 import { useState, useTransition } from "react";
-import { ProfileProjectsForm } from "./ProfileProjectsForm";
-import type { DraftProject } from "./profile-view";
-import type { ProfileProjectInput } from "./actions";
+
 export type ProfileElementKind =
-  "education" | "experience" | "skill" | "professional-link" | "contact";
+  "education" | "experience" | "skill" | "professional-link" | "contact" | "project";
 export type ProfileElementInput = Record<string, string> & { id?: string };
 export type SavedProfileElement = {
   id: string;
@@ -22,8 +20,6 @@ type Props = {
     { ok: true; item: SavedProfileElement } | { ok: false; error: string }
   >;
   initialItems?: Partial<Record<ProfileElementKind, SavedProfileElement[]>>;
-  projects: DraftProject[];
-  saveProject: (values: ProfileProjectInput) => Promise<{ ok: true; item: DraftProject } | { ok: false; error: string }>;
 };
 const definitions: Array<{
   kind: ProfileElementKind;
@@ -53,6 +49,7 @@ const definitions: Array<{
     ],
   },
   { kind: "skill", title: "Skill tag", fields: [["label", "Skill"]] },
+  { kind: "project", title: "Project", fields: [["title", "Title"], ["summary", "Summary"], ["url", "URL"]] },
   {
     kind: "professional-link",
     title: "Professional link",
@@ -101,7 +98,7 @@ const displayNames: Record<string, string> = {
   linkType: "Type",
   actionType: "Action",
 };
-export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reorderSections, projects, saveProject }: Props) {
+export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reorderSections }: Props) {
   const [items, setItems] = useState(initialItems);
   const [values, setValues] = useState<
     Record<ProfileElementKind, ProfileElementInput>
@@ -164,7 +161,6 @@ export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reo
   return (
     <>
       <div className="mt-5 grid gap-5">
-        <ProfileProjectsForm projects={projects} save={saveProject} />
         {sectionOrder.map((kind) => {
           const definition = definitions.find((entry) => entry.kind === kind)!;
           const { title, fields } = definition;

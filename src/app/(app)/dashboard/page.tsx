@@ -13,10 +13,7 @@ import {
 import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
 import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetailsForm";
 import { ProfileElementsForm } from "@/features/professional-profile/ProfileElementsForm";
-import {
-  saveProfileElement,
-  saveProfileProject,
-} from "@/features/professional-profile/actions";
+import { saveProfileElement } from "@/features/professional-profile/actions";
 import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
 import { PrivateProfilePreview } from "@/features/professional-profile/PrivateProfilePreview";
 import { loadDraftProfile } from "@/features/professional-profile/profile-view";
@@ -166,9 +163,7 @@ export default async function DashboardPage() {
               reorderItems={reorderProfileElements.bind(null, profile.id)}
               reorderSections={reorderProfileSections.bind(null, profile.id)}
               save={saveProfileElement.bind(null, profile.id)}
-              initialItems={draft.elements}
-              projects={draft.projects}
-              saveProject={saveProfileProject.bind(null, profile.id)}
+              initialItems={{ ...draft.elements, project: draft.projects.map((project) => ({ id: project.id, label: project.title, values: { title: project.title, summary: project.summary ?? "", url: project.url ?? "" } })) }}
             />
           </div>
         </section>
