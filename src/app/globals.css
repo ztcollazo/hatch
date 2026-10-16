@@ -587,6 +587,22 @@ a:focus-visible {
 }
 .showcase-content {
   max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Public template pages are full-bleed; keep the template's content readable. */
+main[aria-label="Published profile"] .preview-site {
+  min-height: 100vh;
+}
+main[aria-label="Published profile"] .recruiter-content,
+main[aria-label="Published profile"] .showcase-content {
+  width: min(100% - 48px, 1200px);
+  margin-left: auto;
+  margin-right: auto;
+}
+main[aria-label="Published profile"] .recruiter-hero,
+main[aria-label="Published profile"] .showcase-hero {
+  width: 100%;
 }
 .showcase-project-grid {
   display: grid;

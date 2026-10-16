@@ -21,7 +21,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   const profile = await loadPublishedProfile((await createClient()) as never, handle);
   if (!profile) notFound();
   return (
-    <main aria-label="Published profile" className="mx-auto max-w-3xl px-6 py-16">
+    <main aria-label="Published profile" className="min-h-screen w-full py-0">
       {profile.profile_template === "project-showcase" ? (
         <ProjectShowcaseTemplate profile={profile} />
       ) : (
