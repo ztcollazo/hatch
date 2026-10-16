@@ -13,7 +13,6 @@ import {
 import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
 import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetailsForm";
 import { ProfileElementsForm } from "@/features/professional-profile/ProfileElementsForm";
-import { ProfileProjectsForm } from "@/features/professional-profile/ProfileProjectsForm";
 import {
   saveProfileElement,
   saveProfileProject,
@@ -168,10 +167,8 @@ export default async function DashboardPage() {
               reorderSections={reorderProfileSections.bind(null, profile.id)}
               save={saveProfileElement.bind(null, profile.id)}
               initialItems={draft.elements}
-            />
-            <ProfileProjectsForm
               projects={draft.projects}
-              save={saveProfileProject.bind(null, profile.id)}
+              saveProject={saveProfileProject.bind(null, profile.id)}
             />
           </div>
         </section>

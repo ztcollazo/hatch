@@ -1,5 +1,8 @@
 "use client";
 import { useState, useTransition } from "react";
+import { ProfileProjectsForm } from "./ProfileProjectsForm";
+import type { DraftProject } from "./profile-view";
+import type { ProfileProjectInput } from "./actions";
 export type ProfileElementKind =
   "education" | "experience" | "skill" | "professional-link" | "contact";
 export type ProfileElementInput = Record<string, string> & { id?: string };
@@ -19,6 +22,8 @@ type Props = {
     { ok: true; item: SavedProfileElement } | { ok: false; error: string }
   >;
   initialItems?: Partial<Record<ProfileElementKind, SavedProfileElement[]>>;
+  projects: DraftProject[];
+  saveProject: (values: ProfileProjectInput) => Promise<{ ok: true; item: DraftProject } | { ok: false; error: string }>;
 };
 const definitions: Array<{
   kind: ProfileElementKind;
@@ -96,7 +101,7 @@ const displayNames: Record<string, string> = {
   linkType: "Type",
   actionType: "Action",
 };
-export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reorderSections }: Props) {
+export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reorderSections, projects, saveProject }: Props) {
   const [items, setItems] = useState(initialItems);
   const [values, setValues] = useState<
     Record<ProfileElementKind, ProfileElementInput>
@@ -159,6 +164,7 @@ export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reo
   return (
     <>
       <div className="mt-5 grid gap-5">
+        <ProfileProjectsForm projects={projects} save={saveProject} />
         {sectionOrder.map((kind) => {
           const definition = definitions.find((entry) => entry.kind === kind)!;
           const { title, fields } = definition;
