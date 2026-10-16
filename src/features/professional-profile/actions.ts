@@ -311,6 +311,46 @@ export async function publishProfileSnapshot(
   return { ok: true as const, snapshot: data };
 }
 
+export async function unpublishProfile(profileId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
+  const { error } = await supabase.rpc("unpublish_profile", {
+    target_profile_id: profileId,
+  });
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath(`/u/[handle]`, "page");
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
+
+export async function deleteProfileData(profileId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
+
+  // Storage objects are not deleted by Postgres cascades. Remove metadata paths
+  // first, then delete the profile (which cascades all relational profile data).
+  const metadata = await supabase
+    .from("profile_image_metadata")
+    .select("storage_path")
+    .eq("profile_id", profileId);
+  if (metadata.error) return { ok: false as const, error: metadata.error.message };
+  const paths = (metadata.data ?? [])
+    .map((row: { storage_path?: string | null }) => row.storage_path)
+    .filter((path): path is string => Boolean(path));
+  if (paths.length) {
+    const { error } = await supabase.storage.from("images").remove(paths);
+    if (error) return { ok: false as const, error: `Could not remove profile images: ${error.message}` };
+  }
+  const { error } = await supabase.rpc("delete_profile_data", {
+    target_profile_id: profileId,
+  });
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
+
 export async function claimProfileHandle(
   profileId: string,
   currentHandle: string | null,

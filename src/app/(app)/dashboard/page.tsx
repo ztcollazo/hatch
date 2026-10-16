@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import {
   claimProfileHandle,
   publishProfileSnapshot,
+  unpublishProfile,
+  deleteProfileData,
   saveProfileFullName,
   saveProfileDetails,
   reorderProfileElements,
@@ -21,6 +23,7 @@ import {
   type SupabaseProfileClient,
 } from "@/features/professional-profile/profiles";
 import { PublishSnapshotForm } from "@/features/professional-profile/PublishSnapshotForm";
+import { ProfileAccountActions } from "@/features/professional-profile/ProfileAccountActions";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -36,6 +39,12 @@ export default async function DashboardPage() {
     user.email ?? "",
   );
   const draft = await loadDraftProfile(supabase as never, profile.id);
+  const publishedSnapshot = await supabase
+    .from("profile_snapshots")
+    .select("id")
+    .eq("profile_id", profile.id)
+    .limit(1)
+    .maybeSingle();
   const selectedTemplate = profile.profile_template ?? "recruiter-brief";
   const completed = [
     profile.full_name,
@@ -57,6 +66,16 @@ export default async function DashboardPage() {
     );
     if (!result.ok) return result;
     return { ok: true as const, publishedAt: new Date().toISOString() };
+  };
+  const unpublish = async () => {
+    "use server";
+    return unpublishProfile(profile.id);
+  };
+  const deleteProfile = async () => {
+    "use server";
+    const result = await deleteProfileData(profile.id);
+    if (result.ok) redirect("/");
+    return result;
   };
   const reorderItems = async (
     kind: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind,
@@ -163,6 +182,11 @@ export default async function DashboardPage() {
               selectedTemplate={selectedTemplate}
             />
           </div>
+          <ProfileAccountActions
+            unpublish={unpublish}
+            deleteProfile={deleteProfile}
+            published={Boolean(publishedSnapshot.data)}
+          />
           <div id="elements" className="editor-stack">
             <div className="section-heading">
               <div>
