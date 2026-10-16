@@ -22,20 +22,24 @@ export function ProfileAccountActions({ unpublish, deleteProfile, published }: {
   const [deleteResult, deleteAction] = useActionState<Result | null, FormData>(
     async () => deleteProfile(), null,
   );
-  return <section aria-label="Profile publishing and deletion" className="mt-8 border-t border-[#d9d5cb] pt-6">
-    <h2 className="text-xl font-semibold">Profile access</h2>
-    <p className="mt-2 text-sm text-[#6b7280]">Unpublish removes the public snapshot and keeps your draft data.</p>
-    <form action={unpublishAction} className="mt-3">
-      <Submit>{published ? "Unpublish profile page" : "Profile is unpublished"}</Submit>
-    </form>
-    {unpublishResult && <p role={unpublishResult.ok ? "status" : "alert"}>{unpublishResult.ok ? "Your profile is no longer public." : unpublishResult.error}</p>}
-    <div className="mt-6">
-      <h3 className="font-semibold">Delete profile data</h3>
-      <p className="mt-1 text-sm text-[#6b7280]">This permanently deletes your draft, snapshots, and image metadata. Stored profile images are also removed.</p>
-      <form action={deleteAction} className="mt-3" onSubmit={(event) => { if (!window.confirm("Delete all profile data? This cannot be undone.")) event.preventDefault(); }}>
+  return <section aria-label="Profile publishing and deletion" className="profile-account-actions">
+    <div className="account-action-block">
+      <p className="account-kicker">Profile access</p>
+      <h2>Manage your public profile</h2>
+      <p>Unpublish removes the public snapshot and keeps your draft data.</p>
+      <form action={unpublishAction}>
+        <Submit>{published ? "Unpublish profile page" : "Profile is unpublished"}</Submit>
+      </form>
+      {unpublishResult && <p className={unpublishResult.ok ? "account-feedback success" : "account-feedback danger"} role={unpublishResult.ok ? "status" : "alert"}>{unpublishResult.ok ? "Your profile is no longer public." : unpublishResult.error}</p>}
+    </div>
+    <div className="account-action-block account-danger-zone">
+      <p className="account-kicker">Danger zone</p>
+      <h3>Delete profile data</h3>
+      <p>This permanently deletes your draft, snapshots, and stored profile images.</p>
+      <form action={deleteAction} onSubmit={(event) => { if (!window.confirm("Delete all profile data? This cannot be undone.")) event.preventDefault(); }}>
         <Submit>Delete profile data</Submit>
       </form>
-      {deleteResult && <p role="alert">{deleteResult.error}</p>}
+      {deleteResult && <p className="account-feedback danger" role="alert">{deleteResult.error}</p>}
     </div>
   </section>;
 }

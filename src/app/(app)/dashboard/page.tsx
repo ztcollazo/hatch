@@ -182,11 +182,6 @@ export default async function DashboardPage() {
               selectedTemplate={selectedTemplate}
             />
           </div>
-          <ProfileAccountActions
-            unpublish={unpublish}
-            deleteProfile={deleteProfile}
-            published={Boolean(publishedSnapshot.data)}
-          />
           <div id="elements" className="editor-stack">
             <div className="section-heading">
               <div>
@@ -218,6 +213,11 @@ export default async function DashboardPage() {
               }}
             />
           </div>
+          <ProfileAccountActions
+            unpublish={unpublish}
+            deleteProfile={deleteProfile}
+            published={Boolean(publishedSnapshot.data)}
+          />
         </section>
 
         <aside id="preview" className="preview-column">
