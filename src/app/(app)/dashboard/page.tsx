@@ -7,6 +7,8 @@ import {
   saveProfileTemplate,
   saveProfileFullName,
   saveProfileDetails,
+  reorderProfileElements,
+  reorderProfileSections,
 } from "@/features/professional-profile/actions";
 import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
 import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetailsForm";
@@ -161,6 +163,9 @@ export default async function DashboardPage() {
               </div>
             </div>
             <ProfileElementsForm
+              profileId={profile.id}
+              reorderItems={reorderProfileElements.bind(null, profile.id)}
+              reorderSections={reorderProfileSections.bind(null, profile.id)}
               save={saveProfileElement.bind(null, profile.id)}
               initialItems={draft.elements}
             />

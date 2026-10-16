@@ -192,6 +192,42 @@ export async function saveProfileProject(
   };
 }
 
+const elementTables: Record<ProfileElementKind, string> = {
+  education: "profile_education",
+  experience: "profile_experience",
+  skill: "profile_skill_tags",
+  "professional-link": "profile_public_professional_links",
+  contact: "profile_contact_actions",
+};
+
+export async function reorderProfileElements(
+  profileId: string,
+  kind: ProfileElementKind,
+  orderedIds: string[],
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
+  for (const [itemOrder, id] of orderedIds.entries()) {
+    const { error } = await supabase.from(elementTables[kind]).update({ item_order: itemOrder }).eq("id", id).eq("profile_id", profileId);
+    if (error) return { ok: false as const, error: error.message };
+  }
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
+
+export async function reorderProfileSections(profileId: string, orderedKinds: ProfileElementKind[]) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
+  for (const [sectionOrder, sectionKey] of orderedKinds.entries()) {
+    const { error } = await supabase.from("profile_section_settings").upsert({ profile_id: profileId, owner_id: user.id, section_key: sectionKey, section_order: sectionOrder }, { onConflict: "profile_id,section_key" });
+    if (error) return { ok: false as const, error: error.message };
+  }
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
+
 export async function saveProfileTemplate(
   profileId: string,
   template: "recruiter-brief" | "project-showcase",

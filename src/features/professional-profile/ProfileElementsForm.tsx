@@ -9,6 +9,9 @@ export type SavedProfileElement = {
   values: ProfileElementInput;
 };
 type Props = {
+  profileId: string;
+  reorderItems: (kind: ProfileElementKind, ids: string[]) => Promise<{ ok: true } | { ok: false; error: string }>;
+  reorderSections: (kinds: ProfileElementKind[]) => Promise<{ ok: true } | { ok: false; error: string }>;
   save: (
     kind: ProfileElementKind,
     values: ProfileElementInput,
@@ -93,7 +96,7 @@ const displayNames: Record<string, string> = {
   linkType: "Type",
   actionType: "Action",
 };
-export function ProfileElementsForm({ save, initialItems = {} }: Props) {
+export function ProfileElementsForm({ save, initialItems = {}, reorderItems, reorderSections }: Props) {
   const [items, setItems] = useState(initialItems);
   const [values, setValues] = useState<
     Record<ProfileElementKind, ProfileElementInput>
@@ -106,6 +109,9 @@ export function ProfileElementsForm({ save, initialItems = {} }: Props) {
   );
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [dragged, setDragged] = useState<{ kind: ProfileElementKind; id: string } | null>(null);
+  const reorderedIds = (kind: ProfileElementKind, fromId: string, toId: string) => { const list = [...(items[kind] ?? [])]; const from = list.findIndex((item) => item.id === fromId); const to = list.findIndex((item) => item.id === toId); const [item] = list.splice(from, 1); list.splice(to, 0, item); return list.map((entry) => entry.id); };
+  const move = (kind: ProfileElementKind, fromId: string, toId: string) => { if (fromId === toId) return; setItems((current) => { const list = [...(current[kind] ?? [])]; const from = list.findIndex((item) => item.id === fromId); const to = list.findIndex((item) => item.id === toId); const [item] = list.splice(from, 1); list.splice(to, 0, item); return { ...current, [kind]: list }; }); };
   const update = (kind: ProfileElementKind, key: string, value: string) =>
     setValues((current) => ({
       ...current,
@@ -124,7 +130,7 @@ export function ProfileElementsForm({ save, initialItems = {} }: Props) {
     <>
       <div className="mt-5 grid gap-5">
         {definitions.map(({ kind, title, fields }) => (
-          <div
+          <div draggable onDragStart={() => setDragged({ kind, id: kind })} onDragOver={(event) => event.preventDefault()} onDrop={async () => { if (dragged && dragged.kind !== kind) { const order = definitions.map((definition) => definition.kind); const from = order.indexOf(dragged.kind); const to = order.indexOf(kind); order.splice(from, 1); order.splice(to, 0, dragged.kind); await reorderSections(order); } }}
             key={kind}
             className="element-group profile-element-section rounded-xl p-5"
           >
@@ -143,6 +149,10 @@ export function ProfileElementsForm({ save, initialItems = {} }: Props) {
                 {kind === "skill"
                   ? items[kind]?.map((item) => (
                       <li
+                        draggable
+                        onDragStart={() => setDragged({ kind, id: item.id })}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={async () => { if (dragged?.kind === kind) { move(kind, dragged.id, item.id); await reorderItems(kind, reorderedIds(kind, dragged.id, item.id)); } }}
                         onClick={() => editItem(kind, item)}
                         key={item.id}
                         className="tag w-max hover:bg-blue-600/30!"
@@ -151,7 +161,7 @@ export function ProfileElementsForm({ save, initialItems = {} }: Props) {
                       </li>
                     ))
                   : items[kind]?.map((item) => (
-                      <li key={item.id} className="element-card">
+                      <li draggable onDragStart={() => setDragged({ kind, id: item.id })} onDragOver={(event) => event.preventDefault()} onDrop={async () => { if (dragged?.kind === kind) { move(kind, dragged.id, item.id); await reorderItems(kind, reorderedIds(kind, dragged.id, item.id)); } }} key={item.id} className="element-card">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="element-title">{item.label}</p>
