@@ -2,15 +2,17 @@
 
 import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 
 type Props = {
   profileId: string;
   initialImage: { path: string; altText: string; showOnProfilePage: boolean; showOnResume: boolean } | null;
   save: (path: string, altText: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => Promise<{ ok: true } | { ok: false; error: string }>;
   remove: () => Promise<{ ok: true } | { ok: false; error: string }>;
+  updateVisibility: (visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => Promise<{ ok: true } | { ok: false; error: string }>;
 };
 
-export function ProfileImageForm({ profileId, initialImage, save, remove }: Props) {
+export function ProfileImageForm({ profileId, initialImage, save, remove, updateVisibility: updateVisibilityAction }: Props) {
   const [image, setImage] = useState(initialImage);
   const [altText, setAltText] = useState(initialImage?.altText ?? "");
   const [showOnProfilePage, setShowOnProfilePage] = useState(initialImage?.showOnProfilePage ?? true);
@@ -33,6 +35,11 @@ export function ProfileImageForm({ profileId, initialImage, save, remove }: Prop
     });
   }
 
+  function updateOutputVisibility(next: { showOnProfilePage: boolean; showOnResume: boolean }) {
+    setShowOnProfilePage(next.showOnProfilePage); setShowOnResume(next.showOnResume);
+    startTransition(async () => { const result = await updateVisibilityAction(next); if (!result.ok) setMessage(result.error); });
+  }
+
   function removeImage() {
     startTransition(async () => {
       const result = await remove();
@@ -46,7 +53,7 @@ export function ProfileImageForm({ profileId, initialImage, save, remove }: Prop
     <section className="mt-8 rounded-2xl bg-slate-900 p-5">
       <h2 className="text-xl font-bold">Profile image</h2>
       <p className="mt-1 text-sm text-slate-300">Optional. It appears publicly only after you publish.</p>
-      {publicUrl && <img src={publicUrl} alt={image?.altText} className="mt-4 h-24 w-24 rounded-full object-cover" />}
+      {publicUrl && <Image src={publicUrl} alt={image?.altText ?? "Profile image"} className="mt-4 h-24 w-24 rounded-full object-cover" />}
       <label className="mt-4 block text-sm font-semibold">Alt text
         <input value={altText} onChange={(event) => setAltText(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3" />
       </label>
@@ -55,8 +62,8 @@ export function ProfileImageForm({ profileId, initialImage, save, remove }: Prop
         <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} onChange={(event) => { const file = event.target.files?.[0]; if (file) upload(file); }} />
       </label>
       {image && <>
-        <label className="mt-4 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnProfilePage} onChange={(event) => setShowOnProfilePage(event.target.checked)} /> Show on profile</label>
-        <label className="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnResume} onChange={(event) => setShowOnResume(event.target.checked)} /> Show on resume</label>
+        <label className="mt-4 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnProfilePage} onChange={(event) => updateOutputVisibility({ showOnProfilePage: event.target.checked, showOnResume })} /> Show on profile</label>
+        <label className="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnResume} onChange={(event) => updateOutputVisibility({ showOnProfilePage, showOnResume: event.target.checked })} /> Show on resume</label>
         <button type="button" onClick={removeImage} disabled={pending} className="ml-3 rounded-full border border-white/20 px-5 py-3 font-semibold">Remove</button>
       </>}
       {message && <p role="status" className="mt-3 text-sm text-emerald-200">{message}</p>}

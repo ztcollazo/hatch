@@ -38,6 +38,16 @@ export async function saveProfileImage(profileId: string, storagePath: string, a
   return { ok: true as const };
 }
 
+export async function updateProfileImageVisibility(profileId: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
+  const { error } = await supabase.from("profile_image_metadata").update({ show_on_profile_page: visibility.showOnProfilePage, show_on_resume: visibility.showOnResume }).eq("profile_id", profileId);
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
+
 export async function removeProfileImage(profileId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

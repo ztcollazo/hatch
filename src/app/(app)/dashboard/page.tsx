@@ -10,6 +10,7 @@ import {
   saveProfileDetails,
   saveProfileImage,
   removeProfileImage,
+  updateProfileImageVisibility,
   reorderProfileElements,
   updateProfileElementVisibility,
   reorderProfileSections,
@@ -49,6 +50,7 @@ export default async function DashboardPage() {
   const image = imageMetadata.data?.storage_path ? { path: imageMetadata.data.storage_path, altText: imageMetadata.data.alt_text ?? "Profile image", showOnProfilePage: imageMetadata.data.show_on_profile_page !== false, showOnResume: imageMetadata.data.show_on_resume === true } : null;
   const saveImage = async (path: string, altText: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => { "use server"; return saveProfileImage(profile.id, path, altText, visibility); };
   const removeImage = async () => { "use server"; return removeProfileImage(profile.id); };
+  const updateImageVisibility = async (visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => { "use server"; return updateProfileImageVisibility(profile.id, visibility); };
   const publishedSnapshot = await supabase
     .from("profile_snapshots")
     .select("id")
@@ -169,7 +171,7 @@ export default async function DashboardPage() {
                 {profile.full_name ? "Completed" : "Not started"}
               </span>
             </div>
-            <ProfileImageForm profileId={profile.id} initialImage={image} save={saveImage} remove={removeImage} />
+            <ProfileImageForm profileId={profile.id} initialImage={image} save={saveImage} remove={removeImage} updateVisibility={updateImageVisibility} />
             <ProfileIdentityForm
               initialFullName={profile.full_name ?? ""}
               save={saveProfileFullName.bind(null, profile.id)}
