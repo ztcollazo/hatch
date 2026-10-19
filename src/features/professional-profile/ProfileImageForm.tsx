@@ -53,7 +53,13 @@ export function ProfileImageForm({ profileId, initialImage, save, remove, update
     <section className="mt-8 rounded-2xl bg-slate-900 p-5">
       <h2 className="text-xl font-bold">Profile image</h2>
       <p className="mt-1 text-sm text-slate-300">Optional. It appears publicly only after you publish.</p>
-      {publicUrl && <Image src={publicUrl} alt={image?.altText ?? "Profile image"} className="mt-4 h-24 w-24 rounded-full object-cover" />}
+      {publicUrl && <div className="flex items-center gap-4">
+        <Image src={publicUrl} alt={image?.altText ?? "Profile image"} width={96} height={96} className="mt-4 h-24 w-24 rounded-full object-cover" />
+        <div className="flex flex-col">
+          <label className="mt-4 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnProfilePage} onChange={(event) => updateOutputVisibility({ showOnProfilePage: event.target.checked, showOnResume })} /> Show on profile</label>
+          <label className="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnResume} onChange={(event) => updateOutputVisibility({ showOnProfilePage, showOnResume: event.target.checked })} /> Show on resume</label>
+        </div>
+      </div>}
       <label className="mt-4 block text-sm font-semibold">Alt text
         <input value={altText} onChange={(event) => setAltText(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3" />
       </label>
@@ -62,8 +68,6 @@ export function ProfileImageForm({ profileId, initialImage, save, remove, update
         <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} onChange={(event) => { const file = event.target.files?.[0]; if (file) upload(file); }} />
       </label>
       {image && <>
-        <label className="mt-4 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnProfilePage} onChange={(event) => updateOutputVisibility({ showOnProfilePage: event.target.checked, showOnResume })} /> Show on profile</label>
-        <label className="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnResume} onChange={(event) => updateOutputVisibility({ showOnProfilePage, showOnResume: event.target.checked })} /> Show on resume</label>
         <button type="button" onClick={removeImage} disabled={pending} className="ml-3 rounded-full border border-white/20 px-5 py-3 font-semibold">Remove</button>
       </>}
       {message && <p role="status" className="mt-3 text-sm text-emerald-200">{message}</p>}

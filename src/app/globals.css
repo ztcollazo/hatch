@@ -452,7 +452,7 @@ a:focus-visible {
 .recruiter-hero {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: start;
   gap: 24px;
   border-bottom: 1px solid #e5e8ee;
   background: #f8faff;
