@@ -105,7 +105,7 @@ async function requestMagicLinkInBrowser(
     email,
     options: {
       emailRedirectTo:
-        window.location.origin + "/auth/callback?next=/dashboard",
+        window.location.origin + "/dashboard",
       shouldCreateUser: true,
     },
   });
