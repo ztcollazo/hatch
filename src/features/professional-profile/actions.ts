@@ -10,6 +10,7 @@ import type {
   ProfileElementKind,
   ProfileProjectInput,
 } from "./domain/profile-types";
+import { profileElementDefinitionByKind } from "./domain/profile-definitions";
 
 export type { ProfileProjectInput } from "./domain/profile-types";
 
@@ -133,30 +134,10 @@ export async function saveProfileElement(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
-  const definitions: Record<
-    ProfileElementKind,
-    { table: string; required: string }
-  > = {
-    education: { table: "profile_education", required: "school_name" },
-    experience: { table: "profile_experience", required: "role_title" },
-    skill: { table: "profile_skill_tags", required: "label" },
-    "professional-link": {
-      table: "profile_public_professional_links",
-      required: "label",
-    },
-    contact: { table: "profile_contact_actions", required: "label" },
-    project: { table: "profile_projects", required: "title" },
-  };
-  const definition = definitions[kind];
-  const fieldMap: Record<string, string> = {
-    schoolName: "school_name",
-    fieldOfStudy: "field_of_study",
-    startDate: "start_date",
-    endDate: "end_date",
-    roleTitle: "role_title",
-    linkType: "link_type",
-    actionType: "action_type",
-  };
+  const definition = profileElementDefinitionByKind[kind];
+  const fieldMap = Object.fromEntries(
+    definition.fields.map(({ key, column }) => [key, column]),
+  );
   const row: Record<string, string | number | boolean> = {
     profile_id: profileId,
     owner_id: user.id,
@@ -167,10 +148,10 @@ export async function saveProfileElement(
   const itemId = values.id;
   for (const [key, value] of Object.entries(values))
     if (key !== "id" && typeof value === "string" && value.trim()) row[fieldMap[key] ?? key] = value.trim();
-  if (!row[definition.required])
+  if (!row[definition.requiredColumn])
     return {
       ok: false as const,
-      error: `${definition.required.replaceAll("_", " ")} is required.`,
+      error: `${definition.requiredColumn.replaceAll("_", " ")} is required` + ".",
     };
   const result = itemId
     ? await supabase
@@ -247,14 +228,9 @@ export async function saveProfileProject(
   };
 }
 
-const elementTables: Record<ProfileElementKind, string> = {
-  education: "profile_education",
-  experience: "profile_experience",
-  skill: "profile_skill_tags",
-  "professional-link": "profile_public_professional_links",
-  contact: "profile_contact_actions",
-  project: "profile_projects",
-};
+const elementTables = Object.fromEntries(
+  Object.values(profileElementDefinitionByKind).map(({ kind, table }) => [kind, table]),
+) as Record<ProfileElementKind, string>;
 
 export async function updateProfileElementVisibility(profileId: string, kind: ProfileElementKind, itemId: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) {
   const supabase = await createClient();

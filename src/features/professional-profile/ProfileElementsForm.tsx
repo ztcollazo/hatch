@@ -8,6 +8,7 @@ import type {
   ProfileElementKind,
   SavedProfileElement,
 } from "./domain/profile-types";
+import { profileElementDefinitions } from "./domain/profile-definitions";
 
 export type { ProfileElementInput, ProfileElementKind, SavedProfileElement } from "./domain/profile-types";
 type Result = { ok: true } | { ok: false; error: string };
@@ -33,58 +34,11 @@ type Definition = {
   title: string;
   fields: Array<[string, string]>;
 };
-const definitions: Definition[] = [
-  {
-    kind: "education",
-    title: "Education",
-    fields: [
-      ["schoolName", "School name"],
-      ["degree", "Degree"],
-      ["fieldOfStudy", "Field of study"],
-      ["startDate", "Start date"],
-      ["endDate", "End date"],
-    ],
-  },
-  {
-    kind: "experience",
-    title: "Experience",
-    fields: [
-      ["roleTitle", "Role title"],
-      ["organization", "Organization"],
-      ["summary", "Summary"],
-      ["startDate", "Start date"],
-      ["endDate", "End date"],
-    ],
-  },
-  { kind: "skill", title: "Skill tag", fields: [["label", "Skill"]] },
-  {
-    kind: "project",
-    title: "Project",
-    fields: [
-      ["title", "Title"],
-      ["summary", "Summary"],
-      ["url", "URL"],
-    ],
-  },
-  {
-    kind: "professional-link",
-    title: "Professional link",
-    fields: [
-      ["label", "Label"],
-      ["url", "URL"],
-      ["linkType", "Link type"],
-    ],
-  },
-  {
-    kind: "contact",
-    title: "Contact action",
-    fields: [
-      ["label", "Label"],
-      ["url", "URL"],
-      ["actionType", "Action type"],
-    ],
-  },
-];
+const definitions: Definition[] = profileElementDefinitions.map((definition) => ({
+  kind: definition.kind,
+  title: definition.title,
+  fields: definition.fields.map(({ key, label }) => [key, label]),
+}));
 const typeOptions: Record<string, Array<[string, string]>> = {
   linkType: [
     ["linkedin", "LinkedIn"],

@@ -1,3 +1,6 @@
+import { defaultSectionOrder, profileElementDefinitions } from "./domain/profile-definitions";
+import type { ProfileElementKind } from "./domain/profile-types";
+
 export type DraftElement = {
   id: string;
   label: string;
@@ -80,48 +83,24 @@ export async function loadDraftProfile(
     .order("section_order", { ascending: true });
   if (sectionSettingsResult.error)
     throw new Error(sectionSettingsResult.error.message);
-  const defaultSectionOrder = [
-    "education",
-    "experience",
-    "skill",
-    "project",
-    "professional-link",
-    "contact",
-  ];
   const savedSectionOrder = (
     (sectionSettingsResult.data ?? []) as Array<{
       section_key: string;
       section_order: number;
     }>
-  ).map(({ section_key }) => section_key);
+  )
+    .map(({ section_key }) => section_key)
+    .filter((kind): kind is ProfileElementKind =>
+      defaultSectionOrder.includes(kind as ProfileElementKind),
+    );
   const sectionOrder = [
     ...savedSectionOrder,
     ...defaultSectionOrder.filter((kind) => !savedSectionOrder.includes(kind)),
   ];
 
   const elements: Record<string, DraftElement[]> = {};
-  for (const [kind, table, label, columns] of [
-    [
-      "education",
-      "profile_education",
-      "school_name",
-      "id,school_name,degree,field_of_study,start_date,end_date",
-    ],
-    [
-      "experience",
-      "profile_experience",
-      "role_title",
-      "id,role_title,organization,summary,start_date,end_date",
-    ],
-    ["skill", "profile_skill_tags", "label", "id,label"],
-    [
-      "professional-link",
-      "profile_public_professional_links",
-      "label",
-      "id,label,url,link_type",
-    ],
-    ["contact", "profile_contact_actions", "label", "id,label,url,action_type"],
-  ] as const) {
+  for (const { kind, table, labelColumn, fields } of profileElementDefinitions.filter(({ kind }) => kind !== "project")) {
+    const columns = ["id", ...fields.map(({ column }) => column)].join(",");
     const result = await supabase
       .from(table)
       .select(`${columns},show_on_profile_page,show_on_resume`)
@@ -140,7 +119,7 @@ export async function loadDraftProfile(
       );
       return {
         id: String(item.id),
-        label: String(item[label] ?? "Saved item"),
+        label: String(item[labelColumn] ?? "Saved item"),
         item_order: Number(item.item_order ?? 0),
         show_on_profile_page: item.show_on_profile_page !== false,
         show_on_resume: item.show_on_resume === true,
