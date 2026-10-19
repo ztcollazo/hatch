@@ -799,13 +799,18 @@ main[aria-label="Published profile"] .showcase-hero {
   font-size: 11px;
 }
 .auth-content {
-  max-width: 520px;
+  max-width: clamp(540px, 75%, 1024px);
   margin: auto;
   padding: 90px 24px;
 }
 .auth-content h1 {
   margin: 14px 0 30px;
   font-size: clamp(2.4rem, 6vw, 4rem);
+  letter-spacing: -0.07em;
+}
+.auth-content h2 {
+  margin: 14px 0 30px;
+  font-size: clamp(1rem, 3vw, 3rem);
   letter-spacing: -0.07em;
 }
 .auth-content form,

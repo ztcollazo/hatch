@@ -29,7 +29,7 @@ export function MagicLinkSignIn({
   if (sentEmail) {
     return (
       <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white">
-        <h1 className="text-3xl font-bold">Check {sentEmail}</h1>
+        <h1 className="text-xl font-bold">Check {sentEmail}</h1>
         <p className="mt-3 text-slate-300">
           Use the Magic Link we sent to complete sign-in.
         </p>
@@ -65,8 +65,8 @@ export function MagicLinkSignIn({
         void sendMagicLink();
       }}
     >
-      <h1 className="text-3xl font-bold">Sign in with Magic Link</h1>
-      <p className="mt-3 text-slate-300">
+      <h2 className="text-xl font-bold">Sign in with Magic Link</h2>
+      <p className="mt-3">
         Enter your email to create or return to your one profile.
       </p>
       <label className="mt-6 block text-sm font-medium">

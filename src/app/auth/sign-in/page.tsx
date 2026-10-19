@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 export default async function SignInPage() {
   const supabase = await createClient();
-  if ((await supabase.auth.getClaims()).data?.claims) redirect("/dashboard");
+  //if ((await supabase.auth.getClaims()).data?.claims) redirect("/dashboard");
   return (
     <main className="auth-shell">
       <header className="site-header">
