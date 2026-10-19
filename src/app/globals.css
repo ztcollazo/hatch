@@ -655,6 +655,43 @@ main[aria-label="Published profile"] .recruiter-hero,
 main[aria-label="Published profile"] .showcase-hero {
   width: 100%;
 }
+.public-state {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  background: var(--paper);
+  padding: 24px;
+}
+.public-state-card {
+  width: min(100%, 560px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  padding: clamp(28px, 6vw, 56px);
+  box-shadow: 0 16px 50px rgb(23 32 51 / 0.08);
+}
+.public-state-card h1 {
+  margin: 12px 0;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+.public-state-card p:not(.site-eyebrow) {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.public-state-card a,
+.public-state-card button {
+  display: inline-block;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: var(--blue);
+  color: white;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
 .showcase-project-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -839,6 +876,29 @@ main[aria-label="Published profile"] .showcase-hero {
   .recruiter-hero {
     align-items: flex-start;
     flex-direction: column;
+  }
+  main[aria-label="Published profile"] .recruiter-content,
+  main[aria-label="Published profile"] .showcase-content {
+    width: min(100% - 32px, 1200px);
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .recruiter-hero,
+  .showcase-hero {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .recruiter-hero > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .showcase-hero {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .public-state-card {
+    padding: 28px 22px;
   }
 }
 

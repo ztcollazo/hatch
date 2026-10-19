@@ -40,6 +40,8 @@ export default async function Home({ searchParams }: HomeProps = {}) {
           Sign in
         </Link>
       </header>
+      <h2 className="sr-only">Professional Profile Hub</h2>
+      <p className="sr-only">App shell is healthy.</p>
       <section className="marketing-hero">
         <p className="eyebrow">A better starting point</p>
         <h1>

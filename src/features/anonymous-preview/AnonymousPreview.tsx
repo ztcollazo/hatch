@@ -86,7 +86,7 @@ export function AnonymousPreview() {
           <h1>Build a minimum credible profile.</h1>
           <p>
             Enter local details to see how your story comes together. Nothing is
-            saved or published.
+            saved or published. This is a local-only preview.
           </p>
           <form className="mt-6 grid gap-4">
             {fields.map((field) => (
@@ -110,6 +110,7 @@ export function AnonymousPreview() {
                   name="template"
                   checked={template === "recruiter-brief"}
                   onChange={() => setTemplate("recruiter-brief")}
+                aria-label="Recruiter Brief Template"
                 />{" "}
                 Recruiter Brief
               </label>
@@ -119,6 +120,7 @@ export function AnonymousPreview() {
                   name="template"
                   checked={template === "project-showcase"}
                   onChange={() => setTemplate("project-showcase")}
+                aria-label="Project Showcase Template"
                 />{" "}
                 Project Showcase
               </label>
