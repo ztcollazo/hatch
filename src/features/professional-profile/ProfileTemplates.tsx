@@ -132,12 +132,12 @@ function ElementList({
         .sort((a, b) => a.item_order - b.item_order),
     ]),
   );
-  const orderedKinds = [
+  // A section can be present in both the saved ordering and the fallback list
+  // (for example after a reorder migration). Render each section only once.
+  const orderedKinds = [...new Set([
     ...(sectionOrder ?? Object.keys(normalized)),
-    ...Object.keys(normalized).filter(
-      (kind) => !(sectionOrder ?? []).includes(kind),
-    ),
-  ];
+    ...Object.keys(normalized),
+  ])].filter((kind) => kind !== "project");
   return (
     <div className="preview-elements">
       {orderedKinds.map((kind) => {
@@ -220,16 +220,18 @@ export function RecruiterBriefTemplate({
 }) {
   return (
     <article className="preview-site">
-      <header className="recruiter-hero">
+      <header className="recruiter-hero w-full">
         <ProfileImage profile={profile} />
-        <div>
-          <p className="site-eyebrow">Professional profile</p>
-          <h2>{profile.full_name || "Your name"}</h2>
-          <p className="recruiter-role">
-            {profile.target_role || "Your target role"}
-          </p>
+        <div className="w-full flex flex-row justify-between items-center">
+          <div>
+            <p className="site-eyebrow">Professional profile</p>
+            <h2>{profile.full_name || "Your name"}</h2>
+            <p className="recruiter-role">
+              {profile.target_role || "Your target role"}
+            </p>
+          </div>
+          <span className="availability-badge">Open to opportunities</span>
         </div>
-        <span className="availability-badge">Open to opportunities</span>
       </header>
       <div className="recruiter-content">
         <section className="recruiter-summary">
@@ -262,16 +264,18 @@ export function ProjectShowcaseTemplate({
 }) {
   return (
     <article className="preview-site">
-      <header className="showcase-hero">
+      <header className="showcase-hero flex gap-8 items-start">
         <ProfileImage profile={profile} />
-        <p className="site-eyebrow">Project Showcase / 2026</p>
-        <h2>{profile.full_name || "Your name"}</h2>
-        <p className="showcase-role">
-          {profile.target_role || "Your target role"}
-        </p>
-        <p className="showcase-headline">
-          {profile.headline || "A thoughtful maker building useful things."}
-        </p>
+        <div className="flex flex-col gap-2">
+          <p className="site-eyebrow">Project Showcase / 2026</p>
+          <h2>{profile.full_name || "Your name"}</h2>
+          <p className="showcase-role">
+            {profile.target_role || "Your target role"}
+          </p>
+          <p className="showcase-headline">
+            {profile.headline || "A thoughtful maker building useful things."}
+          </p>
+        </div>
       </header>
       <div className="showcase-content">
         {profile.bio && <p className="showcase-bio">{profile.bio}</p>}
