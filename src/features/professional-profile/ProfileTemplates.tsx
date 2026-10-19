@@ -1,4 +1,6 @@
+import Image from "next/image";
 import type { DraftElement, DraftProject } from "./profile-view";
+import { getSupabaseConfig } from "@/lib/supabase/config";
 
 export type ProfileTemplateProfile = {
   full_name: string | null;
@@ -9,7 +11,14 @@ export type ProfileTemplateProfile = {
   elements?: Record<string, DraftElement[]> | null;
   sectionOrder?: string[];
   public_professional_link?: string | null;
+  profile_image?: { path: string; alt_text: string } | null;
 };
+
+function ProfileImage({ profile }: { profile: ProfileTemplateProfile }) {
+  if (!profile.profile_image) return null;
+  const { url } = getSupabaseConfig();
+  return <Image src={`${url}/storage/v1/object/public/images/${profile.profile_image.path}`} alt={profile.profile_image.alt_text} width={128} height={128} className="rounded-full object-cover" />;
+}
 
 const elementTitles: Record<string, string> = {
   education: "Education",
@@ -210,6 +219,7 @@ export function RecruiterBriefTemplate({
   return (
     <article className="preview-site">
       <header className="recruiter-hero">
+        <ProfileImage profile={profile} />
         <div>
           <p className="site-eyebrow">Professional profile</p>
           <h2>{profile.full_name || "Your name"}</h2>
@@ -251,6 +261,7 @@ export function ProjectShowcaseTemplate({
   return (
     <article className="preview-site">
       <header className="showcase-hero">
+        <ProfileImage profile={profile} />
         <p className="site-eyebrow">Project Showcase / 2026</p>
         <h2>{profile.full_name || "Your name"}</h2>
         <p className="showcase-role">

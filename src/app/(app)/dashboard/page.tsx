@@ -8,11 +8,14 @@ import {
   deleteProfileData,
   saveProfileFullName,
   saveProfileDetails,
+  saveProfileImage,
+  removeProfileImage,
   reorderProfileElements,
   reorderProfileSections,
 } from "@/features/professional-profile/actions";
 import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
 import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetailsForm";
+import { ProfileImageForm } from "@/features/professional-profile/ProfileImageForm";
 import { ProfileElementsForm } from "@/features/professional-profile/ProfileElementsForm";
 import { saveProfileElement } from "@/features/professional-profile/actions";
 import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
@@ -40,6 +43,11 @@ export default async function DashboardPage() {
     user.email ?? "",
   );
   const draft = await loadDraftProfile(supabase as never, profile.id);
+  const imageMetadata = await supabase.from("profile_image_metadata").select("storage_path,alt_text").eq("profile_id", profile.id).maybeSingle();
+  if (imageMetadata.error) throw new Error(imageMetadata.error.message);
+  const image = imageMetadata.data?.storage_path ? { path: imageMetadata.data.storage_path, altText: imageMetadata.data.alt_text ?? "Profile image" } : null;
+  const saveImage = async (path: string, altText: string) => { "use server"; return saveProfileImage(profile.id, path, altText); };
+  const removeImage = async () => { "use server"; return removeProfileImage(profile.id); };
   const publishedSnapshot = await supabase
     .from("profile_snapshots")
     .select("id")
@@ -159,6 +167,7 @@ export default async function DashboardPage() {
                 {profile.full_name ? "Completed" : "Not started"}
               </span>
             </div>
+            <ProfileImageForm profileId={profile.id} initialImage={image} save={saveImage} remove={removeImage} />
             <ProfileIdentityForm
               initialFullName={profile.full_name ?? ""}
               save={saveProfileFullName.bind(null, profile.id)}

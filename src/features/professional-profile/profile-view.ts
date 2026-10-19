@@ -19,6 +19,7 @@ export type DraftProject = {
 
 export type DraftProfile = {
   full_name: string | null;
+  profile_image?: { path: string; alt_text: string } | null;
   target_role: string | null;
   headline: string | null;
   bio: string;
