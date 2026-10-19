@@ -14,12 +14,12 @@ import {
   reorderProfileElements,
   updateProfileElementVisibility,
   reorderProfileSections,
+  saveProfileElement,
 } from "@/features/professional-profile/actions";
 import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
 import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetailsForm";
 import { ProfileImageForm } from "@/features/professional-profile/ProfileImageForm";
 import { ProfileElementsForm } from "@/features/professional-profile/ProfileElementsForm";
-import { saveProfileElement } from "@/features/professional-profile/actions";
 import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
 import { PreviewSwitcher } from "@/features/professional-profile/PreviewSwitcher";
 import { loadDraftProfile } from "@/features/professional-profile/profile-view";
@@ -30,6 +30,7 @@ import {
 import { PublishSnapshotForm } from "@/features/professional-profile/PublishSnapshotForm";
 import { ProfileAccountActions } from "@/features/professional-profile/ProfileAccountActions";
 import { draftToResumeData } from "@/features/professional-profile/resume-schema";
+import type { ProfileElementInput, ProfileElementKind } from "@/features/professional-profile/domain/profile-types";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -90,22 +91,22 @@ export default async function DashboardPage() {
     return result;
   };
   const reorderItems = async (
-    kind: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind,
+    kind: ProfileElementKind,
     ids: string[],
   ) => {
     "use server";
     return reorderProfileElements(profile.id, kind, ids);
   };
   const reorderSections = async (
-    kinds: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind[],
+    kinds: ProfileElementKind[],
   ) => {
     "use server";
     return reorderProfileSections(profile.id, kinds);
   };
-  const updateVisibility = async (kind: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind, id: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => { "use server"; return updateProfileElementVisibility(profile.id, kind, id, visibility); };
+  const updateVisibility = async (kind: ProfileElementKind, id: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => { "use server"; return updateProfileElementVisibility(profile.id, kind, id, visibility); };
   const saveElement = async (
-    kind: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind,
-    values: import("@/features/professional-profile/ProfileElementsForm").ProfileElementInput,
+    kind: ProfileElementKind,
+    values: ProfileElementInput,
   ) => {
     "use server";
     return saveProfileElement(profile.id, kind, values);
@@ -214,7 +215,7 @@ export default async function DashboardPage() {
               saveAction={saveElement}
               visibilityAction={updateVisibility}
               initialSectionOrder={
-                draft.sectionOrder as import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind[]
+                draft.sectionOrder as ProfileElementKind[]
               }
               initialItems={{
                 ...draft.elements,

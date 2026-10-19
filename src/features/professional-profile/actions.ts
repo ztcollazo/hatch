@@ -4,18 +4,19 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { claimHandle } from "./handles";
 import type { SupabaseProfileClient } from "./profiles";
-import type { ProfileDetails } from "./ProfileDetailsForm";
 import type {
+  ProfileDetails,
   ProfileElementInput,
   ProfileElementKind,
-} from "./ProfileElementsForm";
+  ProfileProjectInput,
+} from "./domain/profile-types";
 
-export type ProfileProjectInput = {
-  id?: string;
-  title: string;
-  summary: string;
-  url: string;
-};
+export type { ProfileProjectInput } from "./domain/profile-types";
+
+/* Profile mutations are kept here temporarily as the server-action boundary.
+ * Domain input types live outside the UI so persistence code does not depend on
+ * React components. The individual action groups can be split in a later pass.
+ */
 
 export async function saveProfileImage(profileId: string, storagePath: string, altText: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) {
   const supabase = await createClient();

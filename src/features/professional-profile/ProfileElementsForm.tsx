@@ -3,22 +3,13 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { DragDropProvider } from "@dnd-kit/react";
 import type { DragEndEvent } from "@dnd-kit/react";
 import { isSortableOperation, useSortable } from "@dnd-kit/react/sortable";
+import type {
+  ProfileElementInput,
+  ProfileElementKind,
+  SavedProfileElement,
+} from "./domain/profile-types";
 
-export type ProfileElementKind =
-  | "education"
-  | "experience"
-  | "skill"
-  | "professional-link"
-  | "contact"
-  | "project";
-export type ProfileElementInput = Record<string, string | boolean> & { id?: string };
-export type SavedProfileElement = {
-  id: string;
-  label: string;
-  values: ProfileElementInput;
-  show_on_profile_page: boolean;
-  show_on_resume: boolean;
-};
+export type { ProfileElementInput, ProfileElementKind, SavedProfileElement } from "./domain/profile-types";
 type Result = { ok: true } | { ok: false; error: string };
 type Props = {
   profileId: string;
