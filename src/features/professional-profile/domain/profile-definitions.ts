@@ -25,7 +25,11 @@ export const profileElementDefinitions: readonly ProfileElementDefinition[] = [
     fields: [
       { key: "schoolName", column: "school_name", label: "School name" },
       { key: "degree", column: "degree", label: "Degree" },
-      { key: "fieldOfStudy", column: "field_of_study", label: "Field of study" },
+      {
+        key: "fieldOfStudy",
+        column: "field_of_study",
+        label: "Field of study",
+      },
       { key: "startDate", column: "start_date", label: "Start date" },
       { key: "endDate", column: "end_date", label: "End date" },
     ],

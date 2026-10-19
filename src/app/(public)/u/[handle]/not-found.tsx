@@ -10,7 +10,7 @@ export default function PublicProfileNotFound() {
           The link may be incorrect, or the owner may have unpublished this
           profile. Please check the address and try again.
         </p>
-        <Link href="/">Return to Profile Hub</Link>
+        <Link href="/">Return to Hatch</Link>
       </div>
     </main>
   );

@@ -23,11 +23,11 @@ export function HandleClaimForm({ profileId, currentHandle, claim }: Props) {
     return (
       <section className="mt-8 rounded-2xl bg-slate-900 p-5">
         <p className="text-sm font-semibold text-slate-400">
-          Public Profile Route
+          Public profile link
         </p>
         <p className="mt-2 text-2xl font-bold">/u/{claimedHandle}</p>
         <p className="mt-2 text-sm text-slate-300">
-          Handle changes are not supported in the MVP.
+          Your link cannot be changed after it is created.
         </p>
       </section>
     );
@@ -47,7 +47,7 @@ export function HandleClaimForm({ profileId, currentHandle, claim }: Props) {
       }}
     >
       <label className="block text-sm font-semibold text-slate-100">
-        Handle
+        Profile link
         <input
           className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white"
           value={handle}
@@ -56,8 +56,7 @@ export function HandleClaimForm({ profileId, currentHandle, claim }: Props) {
         />
       </label>
       <p className="mt-2 text-sm text-slate-300">
-        Claim a lowercase, URL-safe Handle for your future /u/handle Public
-        Profile Route.
+        Choose a short, lowercase link for your public profile.
       </p>
       {error && (
         <p role="alert" className="mt-3 text-red-200">
@@ -69,7 +68,7 @@ export function HandleClaimForm({ profileId, currentHandle, claim }: Props) {
         disabled={isPending}
         type="submit"
       >
-        Claim Handle
+        Create profile link
       </button>
     </form>
   );

@@ -23,8 +23,8 @@ export function TemplateSelector({
         onChange={handleTemplateChange}
         className="preview-template-select"
       >
-        <option value="recruiter-brief">Recruiter Brief</option>
-        <option value="project-showcase">Project Showcase</option>
+        <option value="recruiter-brief">Quick intro</option>
+        <option value="project-showcase">Project spotlight</option>
       </select>
     </label>
   );

@@ -30,23 +30,38 @@ export function ResumePreview({ data }: { data: ResumeData }) {
             </div>
             <div className="preview-toolbar-actions">
               {url && !loading && !error && (
-                <a className="preview-download-button" href={url} download={fileName}>
+                <a
+                  className="preview-download-button"
+                  href={url}
+                  download={fileName}
+                >
                   Download PDF
                 </a>
               )}
             </div>
           </div>
           {loading ? (
-            <div className="preview-viewport resume-pdf-viewport flex items-center justify-center text-sm text-[#6b7280]" role="status">
+            <div
+              className="preview-viewport resume-pdf-viewport flex items-center justify-center text-sm text-[#6b7280]"
+              role="status"
+            >
               Generating PDF preview…
             </div>
           ) : error || !url ? (
-            <div className="preview-viewport resume-pdf-viewport flex items-center justify-center text-sm text-red-700" role="alert">
-              We couldn’t generate this preview. Check your resume content and try again.
+            <div
+              className="preview-viewport resume-pdf-viewport flex items-center justify-center text-sm text-red-700"
+              role="alert"
+            >
+              We couldn’t generate this preview. Check your resume content and
+              try again.
             </div>
           ) : (
             <div className="preview-viewport resume-pdf-viewport">
-              <iframe title="Generated resume PDF" src={url} className="h-[620px] w-full border-0" />
+              <iframe
+                title="Generated resume PDF"
+                src={url}
+                className="h-[620px] w-full border-0"
+              />
             </div>
           )}
         </section>

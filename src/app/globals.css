@@ -1236,3 +1236,107 @@ main[aria-label="Published profile"] .showcase-hero {
   align-items: center;
   justify-content: space-between;
 }
+
+.text-link {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--blue);
+  padding: 10px 16px;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.header-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  background-color: var(--blue);
+  border-radius: 99px;
+  padding: 10px 16px;
+  text-decoration: none;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* Anonymous Preview uses the same dashboard form and Profile Template surfaces. */
+.anonymous-preview-layout {
+  align-items: start;
+}
+.anonymous-editor {
+  min-width: 0;
+}
+.anonymous-fields {
+  border: 1px solid #dedbd3;
+  border-radius: 12px;
+  background: #f7f5ef;
+  padding: 20px;
+}
+.anonymous-fields .section-heading {
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 16px;
+}
+.anonymous-fields fieldset {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 8px 0 0;
+  padding: 16px 0 0;
+}
+.anonymous-fields legend {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0;
+}
+.anonymous-fields .radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 18px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.anonymous-fields input[type="radio"] {
+  width: auto;
+  accent-color: var(--blue);
+}
+.anonymous-preview-panel {
+  min-width: 0;
+  margin-top: 0;
+}
+.anonymous-preview-panel.profile-preview {
+  margin-top: 0;
+}
+.preview-empty-state {
+  display: grid;
+  min-height: 500px;
+  place-items: center;
+  padding: 32px;
+  color: var(--muted);
+  text-align: center;
+}
+.preview-empty-state p {
+  max-width: 250px;
+  line-height: 1.7;
+}
+@media (max-width: 1023px) {
+  .anonymous-preview-panel.profile-preview {
+    margin-top: 0;
+  }
+}

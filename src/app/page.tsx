@@ -1,18 +1,19 @@
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 const routeGroups = [
   {
-    name: "Draft Profile",
+    name: "Draft",
     description: "Shape your story in a private workspace before you share it.",
   },
   {
-    name: "Published Profile",
+    name: "Published profile",
     description: "Turn one profile into a polished page people can remember.",
   },
   {
-    name: "Supabase Ready",
-    description: "Your profile data is ready for secure, durable outputs.",
+    name: "Ready to share",
+    description: "Your profile is ready to share.",
   },
 ];
 
@@ -21,6 +22,11 @@ type HomeProps = {
 };
 
 export default async function Home({ searchParams }: HomeProps = {}) {
+  const supabase = await createClient();
+  if ((await supabase.auth.getUser()).data?.user) {
+    redirect("/dashboard");
+  }
+
   const params = await searchParams;
   const callbackParams = new URLSearchParams();
   if (params?.code) callbackParams.set("code", params.code);
@@ -33,14 +39,14 @@ export default async function Home({ searchParams }: HomeProps = {}) {
     <main className="marketing-shell">
       <header className="site-header">
         <Link href="/" className="brand-mark flex items-center gap-3">
-          <span className="brand-glyph">P</span>
-          <span>Profile Hub</span>
+          <span className="brand-glyph">H</span>
+          <span>Hatch</span>
         </Link>
         <Link href="/auth/sign-in" className="header-link">
           Sign in
         </Link>
       </header>
-      <h2 className="sr-only">Professional Profile Hub</h2>
+      <h2 className="sr-only">Hatch</h2>
       <p className="sr-only">App shell is healthy.</p>
       <section className="marketing-hero">
         <p className="eyebrow">A better starting point</p>
@@ -55,10 +61,10 @@ export default async function Home({ searchParams }: HomeProps = {}) {
         </p>
         <div className="hero-actions">
           <Link className="primary-button" href="/preview">
-            Try the preview
+            Try it out
           </Link>
           <Link className="text-link" href="/auth/sign-in">
-            Create your profile <span>↗</span>
+            Get started <span>↗</span>
           </Link>
         </div>
       </section>
@@ -72,7 +78,7 @@ export default async function Home({ searchParams }: HomeProps = {}) {
         ))}
       </section>
       <footer className="site-footer">
-        <span>Professional Profile Hub</span>
+        <span>Hatch</span>
         <span>Build something worth remembering.</span>
       </footer>
     </main>

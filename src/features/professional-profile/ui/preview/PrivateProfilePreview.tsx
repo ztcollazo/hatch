@@ -18,7 +18,7 @@ export function PrivateProfilePreview({ profile }: Props) {
 
   const preview = (
     <section
-      aria-label="Private Profile Page Preview"
+      aria-label="Private profile page Preview"
       className={`profile-preview ${fullscreen ? "profile-preview--fullscreen" : ""}`}
     >
       <div className="preview-toolbar">
@@ -36,8 +36,8 @@ export function PrivateProfilePreview({ profile }: Props) {
               value={template}
               onChange={(event) => setTemplate(event.target.value as Template)}
             >
-              <option value="recruiter-brief">Recruiter Brief</option>
-              <option value="project-showcase">Project Showcase</option>
+              <option value="recruiter-brief">Quick intro</option>
+              <option value="project-showcase">Project spotlight</option>
             </select>
           </label>
           <button
@@ -71,7 +71,6 @@ export function PrivateProfilePreview({ profile }: Props) {
         ) : (
           <RecruiterBriefTemplate profile={profile} />
         )}
-
       </div>
     </section>
   );

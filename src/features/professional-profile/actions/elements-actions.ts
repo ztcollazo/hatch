@@ -3,10 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { profileElementDefinitionByKind } from "../domain/profile-definitions";
-import type { ProfileElementInput, ProfileElementKind, ProfileProjectInput } from "../domain/profile-types";
+import type {
+  ProfileElementInput,
+  ProfileElementKind,
+  ProfileProjectInput,
+} from "../domain/profile-types";
 
 const elementTables = Object.fromEntries(
-  Object.values(profileElementDefinitionByKind).map(({ kind, table }) => [kind, table]),
+  Object.values(profileElementDefinitionByKind).map(({ kind, table }) => [
+    kind,
+    table,
+  ]),
 ) as Record<ProfileElementKind, string>;
 
 export async function saveProfileElement(
@@ -32,11 +39,13 @@ export async function saveProfileElement(
   };
   const itemId = values.id;
   for (const [key, value] of Object.entries(values))
-    if (key !== "id" && typeof value === "string" && value.trim()) row[fieldMap[key] ?? key] = value.trim();
+    if (key !== "id" && typeof value === "string" && value.trim())
+      row[fieldMap[key] ?? key] = value.trim();
   if (!row[definition.requiredColumn])
     return {
       ok: false as const,
-      error: `${definition.requiredColumn.replaceAll("_", " ")} is required` + ".",
+      error:
+        `${definition.requiredColumn.replaceAll("_", " ")} is required` + ".",
     };
   const result = itemId
     ? await supabase
@@ -55,11 +64,11 @@ export async function saveProfileElement(
       id: data?.id ?? crypto.randomUUID(),
       label: String(
         values.label ??
-        values.schoolName ??
-        values.roleTitle ??
-        values.title ??
-        values.url ??
-        "Saved item",
+          values.schoolName ??
+          values.roleTitle ??
+          values.title ??
+          values.url ??
+          "Saved item",
       ),
       values: Object.fromEntries(
         Object.entries(values).filter(([key]) => key !== "id"),
@@ -113,11 +122,25 @@ export async function saveProfileProject(
   };
 }
 
-export async function updateProfileElementVisibility(profileId: string, kind: ProfileElementKind, itemId: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) {
+export async function updateProfileElementVisibility(
+  profileId: string,
+  kind: ProfileElementKind,
+  itemId: string,
+  visibility: { showOnProfilePage: boolean; showOnResume: boolean },
+) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
-  const { error } = await supabase.from(elementTables[kind]).update({ show_on_profile_page: visibility.showOnProfilePage, show_on_resume: visibility.showOnResume }).eq("id", itemId).eq("profile_id", profileId);
+  const { error } = await supabase
+    .from(elementTables[kind])
+    .update({
+      show_on_profile_page: visibility.showOnProfilePage,
+      show_on_resume: visibility.showOnResume,
+    })
+    .eq("id", itemId)
+    .eq("profile_id", profileId);
   if (error) return { ok: false as const, error: error.message };
   revalidatePath("/dashboard");
   return { ok: true as const };

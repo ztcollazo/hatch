@@ -10,8 +10,8 @@ export default async function SignInPage() {
     <main className="auth-shell">
       <header className="site-header">
         <Link href="/" className="brand-mark flex items-center gap-3">
-          <span className="brand-glyph">P</span>
-          <span>Profile Hub</span>
+          <span className="brand-glyph">H</span>
+          <span>Hatch</span>
         </Link>
       </header>
       <div className="auth-content">

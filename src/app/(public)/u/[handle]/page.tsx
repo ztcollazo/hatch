@@ -20,11 +20,11 @@ export async function generateMetadata({
   if (!profile) return { title: "Profile not found" };
   return {
     title: `${profile.full_name} · ${profile.target_role}`,
-    description: profile.headline ?? "Professional Profile",
+    description: profile.headline ?? "profile",
     robots: profile.search_indexing ? "index, follow" : "noindex, nofollow",
     openGraph: {
       title: `${profile.full_name} · ${profile.target_role}`,
-      description: profile.headline ?? "Professional Profile",
+      description: profile.headline ?? "profile",
       type: "profile",
     },
   };

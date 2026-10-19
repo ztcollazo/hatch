@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { HandleClaimForm } from "./HandleClaimForm";
 
 describe("Handle claim form", () => {
-  it("lets a signed-in user claim a Handle and shows the Public Profile Route", async () => {
+  it("lets a signed-in user claim a Handle and shows the Public profile link", async () => {
     const user = userEvent.setup();
     const claim = vi.fn().mockResolvedValue({ ok: true, handle: "maya-chen" });
     render(
@@ -15,8 +15,10 @@ describe("Handle claim form", () => {
       }),
     );
 
-    await user.type(screen.getByLabelText(/handle/i), "maya-chen");
-    await user.click(screen.getByRole("button", { name: /claim handle/i }));
+    await user.type(screen.getByLabelText(/profile link/i), "maya-chen");
+    await user.click(
+      screen.getByRole("button", { name: /create profile link/i }),
+    );
 
     expect(claim).toHaveBeenCalledWith("profile-1", null, "maya-chen");
     expect(await screen.findByText("/u/maya-chen")).toBeInTheDocument();
@@ -32,9 +34,9 @@ describe("Handle claim form", () => {
     );
 
     expect(
-      screen.queryByRole("button", { name: /claim handle/i }),
+      screen.queryByRole("button", { name: /create profile link/i }),
     ).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/handle/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/profile link/i)).not.toBeInTheDocument();
     expect(screen.getByText("/u/maya")).toBeInTheDocument();
   });
 });

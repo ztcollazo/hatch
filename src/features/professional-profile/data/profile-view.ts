@@ -1,4 +1,7 @@
-import { defaultSectionOrder, profileElementDefinitions } from "../domain/profile-definitions";
+import {
+  defaultSectionOrder,
+  profileElementDefinitions,
+} from "../domain/profile-definitions";
 import type { ProfileElementKind } from "../domain/profile-types";
 
 export type DraftElement = {
@@ -22,7 +25,12 @@ export type DraftProject = {
 
 export type DraftProfile = {
   full_name: string | null;
-  profile_image?: { path: string; alt_text: string; show_on_profile_page?: boolean; show_on_resume?: boolean } | null;
+  profile_image?: {
+    path: string;
+    alt_text: string;
+    show_on_profile_page?: boolean;
+    show_on_resume?: boolean;
+  } | null;
   target_role: string | null;
   headline: string | null;
   bio: string;
@@ -99,7 +107,12 @@ export async function loadDraftProfile(
   ];
 
   const elements: Record<string, DraftElement[]> = {};
-  for (const { kind, table, labelColumn, fields } of profileElementDefinitions.filter(({ kind }) => kind !== "project")) {
+  for (const {
+    kind,
+    table,
+    labelColumn,
+    fields,
+  } of profileElementDefinitions.filter(({ kind }) => kind !== "project")) {
     const columns = ["id", ...fields.map(({ column }) => column)].join(",");
     const result = await supabase
       .from(table)

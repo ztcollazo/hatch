@@ -15,7 +15,11 @@ export function PreviewSwitcher({ profile, resume }: Props) {
 
   return (
     <section aria-label="Profile previews">
-      <div className="mb-4 flex rounded-lg border border-[#d9d5cb] bg-[#fffdf8] p-1 mt-4" role="tablist" aria-label="Preview type">
+      <div
+        className="mb-4 flex rounded-lg border border-[#d9d5cb] bg-[#fffdf8] p-1 mt-4"
+        role="tablist"
+        aria-label="Preview type"
+      >
         <button
           type="button"
           role="tab"
@@ -35,7 +39,11 @@ export function PreviewSwitcher({ profile, resume }: Props) {
           Resume PDF preview
         </button>
       </div>
-      {mode === "website" ? <PrivateProfilePreview profile={profile} /> : <ResumePreview resume={resume} />}
+      {mode === "website" ? (
+        <PrivateProfilePreview profile={profile} />
+      ) : (
+        <ResumePreview resume={resume} />
+      )}
     </section>
   );
 }

@@ -8,7 +8,7 @@ const ResumePreview = dynamic(
   {
     ssr: false,
     loading: () => <p>Loading PDF preview...</p>,
-  }
+  },
 );
 
 export default function ResumePreviewLoader({

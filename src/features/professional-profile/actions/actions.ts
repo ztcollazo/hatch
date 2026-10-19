@@ -7,10 +7,7 @@ export {
   updateProfileImageVisibility,
   removeProfileImage,
 } from "./image-actions";
-export {
-  saveProfileFullName,
-  saveProfileDetails,
-} from "./profile-actions";
+export { saveProfileFullName, saveProfileDetails } from "./profile-actions";
 export {
   saveProfileElement,
   saveProfileProject,

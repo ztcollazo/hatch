@@ -10,7 +10,11 @@ import type {
 } from "../../domain/profile-types";
 import { profileElementDefinitions } from "../../domain/profile-definitions";
 
-export type { ProfileElementInput, ProfileElementKind, SavedProfileElement } from "../../domain/profile-types";
+export type {
+  ProfileElementInput,
+  ProfileElementKind,
+  SavedProfileElement,
+} from "../../domain/profile-types";
 type Result = { ok: true } | { ok: false; error: string };
 type Props = {
   profileId: string;
@@ -26,7 +30,11 @@ type Props = {
   ) => Promise<
     { ok: true; item: SavedProfileElement } | { ok: false; error: string }
   >;
-  visibilityAction: (kind: ProfileElementKind, id: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => Promise<Result>;
+  visibilityAction: (
+    kind: ProfileElementKind,
+    id: string,
+    visibility: { showOnProfilePage: boolean; showOnResume: boolean },
+  ) => Promise<Result>;
   initialItems?: Partial<Record<ProfileElementKind, SavedProfileElement[]>>;
 };
 type Definition = {
@@ -34,11 +42,13 @@ type Definition = {
   title: string;
   fields: Array<[string, string]>;
 };
-const definitions: Definition[] = profileElementDefinitions.map((definition) => ({
-  kind: definition.kind,
-  title: definition.title,
-  fields: definition.fields.map(({ key, label }) => [key, label]),
-}));
+const definitions: Definition[] = profileElementDefinitions.map(
+  (definition) => ({
+    kind: definition.kind,
+    title: definition.title,
+    fields: definition.fields.map(({ key, label }) => [key, label]),
+  }),
+);
 const typeOptions: Record<string, Array<[string, string]>> = {
   linkType: [
     ["linkedin", "LinkedIn"],
@@ -119,7 +129,10 @@ function ItemCard({
   kind: ProfileElementKind;
   index: number;
   onEdit: () => void;
-  onVisibilityChange: (visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => void;
+  onVisibilityChange: (visibility: {
+    showOnProfilePage: boolean;
+    showOnResume: boolean;
+  }) => void;
 }) {
   const { ref, handleRef } = useSortable({
     id: `item:${kind}:${item.id}`,
@@ -180,15 +193,41 @@ function ItemCard({
         </button>
       </div>
       <div className="mt-3 flex flex-wrap gap-4 text-sm">
-        <label className="flex items-center gap-2"><input type="checkbox" checked={item.show_on_profile_page} onChange={(event) => onVisibilityChange({ showOnProfilePage: event.target.checked, showOnResume: item.show_on_resume })} /> Show on profile</label>
-        <label className="flex items-center gap-2"><input type="checkbox" checked={item.show_on_resume} onChange={(event) => onVisibilityChange({ showOnProfilePage: item.show_on_profile_page, showOnResume: event.target.checked })} /> Show on resume</label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={item.show_on_profile_page}
+            onChange={(event) =>
+              onVisibilityChange({
+                showOnProfilePage: event.target.checked,
+                showOnResume: item.show_on_resume,
+              })
+            }
+          />{" "}
+          Show on my profile
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={item.show_on_resume}
+            onChange={(event) =>
+              onVisibilityChange({
+                showOnProfilePage: item.show_on_profile_page,
+                showOnResume: event.target.checked,
+              })
+            }
+          />{" "}
+          Show on resume
+        </label>
       </div>
       {kind !== "skill" && (
         <dl className="element-details">
           {Object.entries(item.values)
             .filter(
               ([key, value]) =>
-                !(["id", "show_on_resume", "show_on_profile_page"].includes(key)) &&
+                !["id", "show_on_resume", "show_on_profile_page"].includes(
+                  key,
+                ) &&
                 value &&
                 !(
                   ["schoolName", "roleTitle", "label"].includes(key) &&
@@ -364,8 +403,32 @@ export function ProfileElementsForm({
                           index={i}
                           onEdit={() => editItem(kind, item)}
                           onVisibilityChange={(visibility) => {
-                            setItems((current) => ({ ...current, [kind]: (current[kind] ?? []).map((entry) => entry.id === item.id ? { ...entry, show_on_profile_page: visibility.showOnProfilePage, show_on_resume: visibility.showOnResume } : entry) }));
-                            startTransition(() => { void visibilityAction(kind, item.id, visibility).then((result) => setReorderMessage(result.ok ? "Visibility updated" : result.error)); });
+                            setItems((current) => ({
+                              ...current,
+                              [kind]: (current[kind] ?? []).map((entry) =>
+                                entry.id === item.id
+                                  ? {
+                                      ...entry,
+                                      show_on_profile_page:
+                                        visibility.showOnProfilePage,
+                                      show_on_resume: visibility.showOnResume,
+                                    }
+                                  : entry,
+                              ),
+                            }));
+                            startTransition(() => {
+                              void visibilityAction(
+                                kind,
+                                item.id,
+                                visibility,
+                              ).then((result) =>
+                                setReorderMessage(
+                                  result.ok
+                                    ? "Visibility updated"
+                                    : result.error,
+                                ),
+                              );
+                            });
                           }}
                         />
                       ))}

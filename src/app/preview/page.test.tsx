@@ -15,7 +15,10 @@ describe("Anonymous Preview", () => {
     render(createElement(PreviewPage));
 
     await user.type(screen.getByLabelText(/full name/i), "Maya Chen");
-    await user.type(screen.getByLabelText(/target role/i), "Frontend Intern");
+    await user.type(
+      screen.getByLabelText(/what are you looking for/i),
+      "Frontend Intern",
+    );
     await user.type(
       screen.getByLabelText(/headline/i),
       "React student building helpful tools",
@@ -29,11 +32,11 @@ describe("Anonymous Preview", () => {
       "Campus Events Finder",
     );
     await user.type(
-      screen.getByLabelText(/skill tags/i),
+      screen.getByLabelText(/Skills/i),
       "React, TypeScript, Supabase",
     );
     await user.type(
-      screen.getByLabelText(/public professional link/i),
+      screen.getByLabelText(/professional link/i),
       "https://github.com/maya",
     );
 
@@ -45,23 +48,23 @@ describe("Anonymous Preview", () => {
     ).toHaveTextContent("Frontend Intern");
     expect(screen.getByText("Campus Events Finder")).toBeInTheDocument();
     expect(screen.getByText("React")).toBeInTheDocument();
-    expect(screen.getByText(/local-only/i)).toBeInTheDocument();
+    expect(screen.getByText(/nothing is saved/i)).toBeInTheDocument();
   });
 
-  it("switches between Recruiter Brief Template and Project Showcase Template", async () => {
+  it("switches between Quick intro Template and Project spotlight Template", async () => {
     const user = userEvent.setup();
     render(createElement(PreviewPage));
 
     await user.type(screen.getByLabelText(/full name/i), "Maya Chen");
 
-    expect(screen.getByText(/recruiter brief preview/i)).toBeInTheDocument();
+    expect(screen.getByText(/quick intro preview/i)).toBeInTheDocument();
 
-    await user.click(screen.getByLabelText(/project showcase template/i));
+    await user.click(screen.getByLabelText(/project spotlight look/i));
 
-    expect(screen.getByText(/project showcase preview/i)).toBeInTheDocument();
+    expect(screen.getByText(/project spotlight preview/i)).toBeInTheDocument();
   });
 
-  it("keeps Placeholder Examples out of the preview until the user enters their own Professional Profile data", () => {
+  it("keeps Placeholder Examples out of the preview until the user enters their own profile data", () => {
     render(createElement(PreviewPage));
 
     expect(screen.queryByText("Maya Chen")).not.toBeInTheDocument();

@@ -19,7 +19,7 @@ function PublishButton() {
       className="publish-snapshot-button"
       disabled={pending}
     >
-      {pending ? "Publishing…" : "Publish profile page"}
+      {pending ? "Publishing…" : "Share profile"}
       {!pending && <span aria-hidden="true">→</span>}
     </button>
   );
@@ -43,7 +43,7 @@ export function PublishSnapshotForm({
       <div className="publish-snapshot-heading">
         <div>
           <p className="publish-kicker">Ready when you are</p>
-          <h3>Publish your profile snapshot</h3>
+          <h3>Share your profile</h3>
           <p>
             Choose a visual direction, then share a polished version of your
             professional story.
@@ -54,7 +54,7 @@ export function PublishSnapshotForm({
         </span>
       </div>
       <fieldset className="template-options">
-        <legend>Choose a template</legend>
+        <legend>Choose a look</legend>
         <label className="template-option">
           <input
             type="radio"
@@ -64,7 +64,7 @@ export function PublishSnapshotForm({
           />
           <span className="template-option-mark" />
           <span>
-            <strong>Recruiter Brief</strong>
+            <strong>Quick intro</strong>
             <small>Clear, focused, and easy to scan.</small>
           </span>
         </label>
@@ -77,7 +77,7 @@ export function PublishSnapshotForm({
           />
           <span className="template-option-mark" />
           <span>
-            <strong>Project Showcase</strong>
+            <strong>Project spotlight</strong>
             <small>Make your work and point of view lead.</small>
           </span>
         </label>

@@ -76,7 +76,7 @@ export function ProfileSectionEditor({ profileId }: Props) {
     <section className="mt-8 rounded-2xl bg-slate-900 p-5">
       <h2 className="text-2xl font-bold">Profile Sections</h2>
       <p className="mt-2 text-sm text-slate-300">
-        Edit typed Profile Sections with Item Order and Output Visibility.
+        Edit typed Profile Sections with Item Order and Where to show it.
       </p>
 
       <div className="mt-6 grid gap-4">
@@ -130,7 +130,7 @@ export function ProfileSectionEditor({ profileId }: Props) {
                 checked={project.showOnProfilePage}
                 readOnly
               />
-              Show Project on Profile Page
+              Show Project on profile page
             </label>
             <div className="mt-4 flex gap-2">
               <button

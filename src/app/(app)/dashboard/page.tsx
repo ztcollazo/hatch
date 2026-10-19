@@ -30,7 +30,10 @@ import {
 import { PublishSnapshotForm } from "@/features/professional-profile/ui/forms/PublishSnapshotForm";
 import { ProfileAccountActions } from "@/features/professional-profile/ui/forms/ProfileAccountActions";
 import { draftToResumeData } from "@/features/professional-profile/data/resume-schema";
-import type { ProfileElementInput, ProfileElementKind } from "@/features/professional-profile/domain/profile-types";
+import type {
+  ProfileElementInput,
+  ProfileElementKind,
+} from "@/features/professional-profile/domain/profile-types";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -46,12 +49,39 @@ export default async function DashboardPage() {
     user.email ?? "",
   );
   const draft = await loadDraftProfile(supabase as never, profile.id);
-  const imageMetadata = await supabase.from("profile_image_metadata").select("storage_path,alt_text,show_on_profile_page,show_on_resume").eq("profile_id", profile.id).maybeSingle();
+  const imageMetadata = await supabase
+    .from("profile_image_metadata")
+    .select("storage_path,alt_text,show_on_profile_page,show_on_resume")
+    .eq("profile_id", profile.id)
+    .maybeSingle();
   if (imageMetadata.error) throw new Error(imageMetadata.error.message);
-  const image = imageMetadata.data?.storage_path ? { path: imageMetadata.data.storage_path, altText: imageMetadata.data.alt_text ?? "Profile image", showOnProfilePage: imageMetadata.data.show_on_profile_page !== false, showOnResume: imageMetadata.data.show_on_resume === true } : null;
-  const saveImage = async (path: string, altText: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => { "use server"; return saveProfileImage(profile.id, path, altText, visibility); };
-  const removeImage = async () => { "use server"; return removeProfileImage(profile.id); };
-  const updateImageVisibility = async (visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => { "use server"; return updateProfileImageVisibility(profile.id, visibility); };
+  const image = imageMetadata.data?.storage_path
+    ? {
+        path: imageMetadata.data.storage_path,
+        altText: imageMetadata.data.alt_text ?? "Profile image",
+        showOnProfilePage: imageMetadata.data.show_on_profile_page !== false,
+        showOnResume: imageMetadata.data.show_on_resume === true,
+      }
+    : null;
+  const saveImage = async (
+    path: string,
+    altText: string,
+    visibility: { showOnProfilePage: boolean; showOnResume: boolean },
+  ) => {
+    "use server";
+    return saveProfileImage(profile.id, path, altText, visibility);
+  };
+  const removeImage = async () => {
+    "use server";
+    return removeProfileImage(profile.id);
+  };
+  const updateImageVisibility = async (visibility: {
+    showOnProfilePage: boolean;
+    showOnResume: boolean;
+  }) => {
+    "use server";
+    return updateProfileImageVisibility(profile.id, visibility);
+  };
   const publishedSnapshot = await supabase
     .from("profile_snapshots")
     .select("id")
@@ -90,20 +120,22 @@ export default async function DashboardPage() {
     if (result.ok) redirect("/");
     return result;
   };
-  const reorderItems = async (
-    kind: ProfileElementKind,
-    ids: string[],
-  ) => {
+  const reorderItems = async (kind: ProfileElementKind, ids: string[]) => {
     "use server";
     return reorderProfileElements(profile.id, kind, ids);
   };
-  const reorderSections = async (
-    kinds: ProfileElementKind[],
-  ) => {
+  const reorderSections = async (kinds: ProfileElementKind[]) => {
     "use server";
     return reorderProfileSections(profile.id, kinds);
   };
-  const updateVisibility = async (kind: ProfileElementKind, id: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => { "use server"; return updateProfileElementVisibility(profile.id, kind, id, visibility); };
+  const updateVisibility = async (
+    kind: ProfileElementKind,
+    id: string,
+    visibility: { showOnProfilePage: boolean; showOnResume: boolean },
+  ) => {
+    "use server";
+    return updateProfileElementVisibility(profile.id, kind, id, visibility);
+  };
   const saveElement = async (
     kind: ProfileElementKind,
     values: ProfileElementInput,
@@ -115,14 +147,14 @@ export default async function DashboardPage() {
   return (
     <main className="dashboard-shell min-h-screen text-[#172033]">
       <header className="dashboard-header border-b border-[#d9d5cb] bg-[#f7f5ef]/90 px-5 py-4 backdrop-blur md:px-10">
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-360 items-center justify-between gap-4">
           <Link
             href="/"
             className="brand-mark flex items-center gap-3"
-            aria-label="Profile Hub home"
+            aria-label="Hatch home"
           >
-            <span className="brand-glyph">P</span>
-            <span>Profile Hub</span>
+            <span className="brand-glyph">H</span>
+            <span>Hatch</span>
           </Link>
           <div className="flex items-center gap-4 text-sm text-[#6b7280]">
             <span className="hidden sm:inline">{user.email}</span>
@@ -132,7 +164,7 @@ export default async function DashboardPage() {
           </div>
         </div>
       </header>
-      <div className="mx-auto grid max-w-[1440px] gap-8 px-5 py-8 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(480px,50vw)]">
+      <div className="mx-auto grid max-w-360 gap-8 px-5 py-8 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(480px,50vw)]">
         <section id="overview" className="min-w-0">
           <div className="dashboard-intro">
             <p className="eyebrow">Your professional home</p>
@@ -172,7 +204,13 @@ export default async function DashboardPage() {
                 {profile.full_name ? "Completed" : "Not started"}
               </span>
             </div>
-            <ProfileImageForm profileId={profile.id} initialImage={image} save={saveImage} remove={removeImage} updateVisibility={updateImageVisibility} />
+            <ProfileImageForm
+              profileId={profile.id}
+              initialImage={image}
+              saveAction={saveImage}
+              removeAction={removeImage}
+              updateVisibilityAction={updateImageVisibility}
+            />
             <ProfileIdentityForm
               initialFullName={profile.full_name ?? ""}
               save={saveProfileFullName.bind(null, profile.id)}
@@ -214,9 +252,7 @@ export default async function DashboardPage() {
               reorderSectionsAction={reorderSections}
               saveAction={saveElement}
               visibilityAction={updateVisibility}
-              initialSectionOrder={
-                draft.sectionOrder as ProfileElementKind[]
-              }
+              initialSectionOrder={draft.sectionOrder as ProfileElementKind[]}
               initialItems={{
                 ...draft.elements,
                 project: draft.projects.map((project) => ({
@@ -234,15 +270,18 @@ export default async function DashboardPage() {
             />
           </div>
           <ProfileAccountActions
-            unpublish={unpublish}
-            deleteProfile={deleteProfile}
+            unpublishAction={unpublish}
+            deleteProfileAction={deleteProfile}
             published={Boolean(publishedSnapshot.data)}
           />
         </section>
 
         <aside id="preview" className="preview-column">
           <div className="preview-sticky">
-            <PreviewSwitcher profile={draft} resume={draftToResumeData(draft)} />
+            <PreviewSwitcher
+              profile={draft}
+              resume={draftToResumeData(draft)}
+            />
           </div>
         </aside>
       </div>

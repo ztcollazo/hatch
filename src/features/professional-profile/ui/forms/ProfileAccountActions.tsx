@@ -16,20 +16,20 @@ function Submit({ children }: { children: React.ReactNode }) {
 }
 
 export function ProfileAccountActions({
-  unpublish,
-  deleteProfile,
+  unpublishAction,
+  deleteProfileAction,
   published,
 }: {
-  unpublish: Action;
-  deleteProfile: Action;
+  unpublishAction: Action;
+  deleteProfileAction: Action;
   published: boolean;
 }) {
-  const [unpublishResult, unpublishAction] = useActionState<
+  const [unpublishResult, unpublishActionExec] = useActionState<
     Result | null,
     FormData
-  >(async () => unpublish(), null);
+  >(async () => unpublishAction(), null);
   const [deleteResult, deleteAction] = useActionState<Result | null, FormData>(
-    async () => deleteProfile(),
+    async () => deleteProfileAction(),
     null,
   );
   return (
@@ -38,12 +38,12 @@ export function ProfileAccountActions({
       className="profile-account-actions"
     >
       <div className="account-action-block">
-        <p className="account-kicker">Profile access</p>
+        <p className="account-kicker">Profile settings</p>
         <h2>Manage your public profile</h2>
-        <p>Unpublish removes the public snapshot and keeps your draft data.</p>
-        <form action={unpublishAction}>
+        <p>Taking your profile offline keeps your saved information safe.</p>
+        <form action={unpublishActionExec}>
           <Submit>
-            {published ? "Unpublish profile page" : "Profile is unpublished"}
+            {published ? "Take profile offline" : "Profile is unpublished"}
           </Submit>
         </form>
         {unpublishResult && (
@@ -62,12 +62,9 @@ export function ProfileAccountActions({
         )}
       </div>
       <div className="account-action-block account-danger-zone">
-        <p className="account-kicker">Danger zone</p>
-        <h3>Delete profile data</h3>
-        <p>
-          This permanently deletes your draft, snapshots, and stored profile
-          images.
-        </p>
+        <p className="account-kicker">Delete account</p>
+        <h3>Delete my data</h3>
+        <p>This permanently deletes your saved profile and images.</p>
         <form
           action={deleteAction}
           onSubmit={(event) => {
@@ -77,7 +74,7 @@ export function ProfileAccountActions({
               event.preventDefault();
           }}
         >
-          <Submit>Delete profile data</Submit>
+          <Submit>Delete my data</Submit>
         </form>
         {deleteResult && (
           <p className="account-feedback danger" role="alert">

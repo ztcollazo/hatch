@@ -11,15 +11,32 @@ export type ProfileTemplateProfile = {
   elements?: Record<string, DraftElement[]> | null;
   sectionOrder?: string[];
   public_professional_link?: string | null;
-  profile_image?: { path: string; alt_text: string; show_on_profile_page?: boolean; show_on_resume?: boolean } | null;
+  profile_image?: {
+    path: string;
+    alt_text: string;
+    show_on_profile_page?: boolean;
+    show_on_resume?: boolean;
+  } | null;
 };
 
 function ProfileImage({ profile }: { profile: ProfileTemplateProfile }) {
-  if (profile.profile_image && profile.profile_image.show_on_profile_page === false) return null;
-  const { url } = getSupabaseConfig();
+  if (
+    profile.profile_image &&
+    profile.profile_image.show_on_profile_page === false
+  )
+    return null;
   const image = profile.profile_image;
   if (!image) return null;
-  return <Image src={`${url}/storage/v1/object/public/images/${image.path}`} alt={image.alt_text} width={128} height={128} className="rounded-full object-cover" />;
+  const { url } = getSupabaseConfig();
+  return (
+    <Image
+      src={`${url}/storage/v1/object/public/images/${image.path}`}
+      alt={image.alt_text}
+      width={128}
+      height={128}
+      className="rounded-full object-cover"
+    />
+  );
 }
 
 const elementTitles: Record<string, string> = {
@@ -134,10 +151,12 @@ function ElementList({
   );
   // A section can be present in both the saved ordering and the fallback list
   // (for example after a reorder migration). Render each section only once.
-  const orderedKinds = [...new Set([
-    ...(sectionOrder ?? Object.keys(normalized)),
-    ...Object.keys(normalized),
-  ])].filter((kind) => kind !== "project");
+  const orderedKinds = [
+    ...new Set([
+      ...(sectionOrder ?? Object.keys(normalized)),
+      ...Object.keys(normalized),
+    ]),
+  ].filter((kind) => kind !== "project");
   return (
     <div className="preview-elements">
       {orderedKinds.map((kind) => {
@@ -227,7 +246,7 @@ export function RecruiterBriefTemplate({
             <p className="site-eyebrow">Professional profile</p>
             <h2>{profile.full_name || "Your name"}</h2>
             <p className="recruiter-role">
-              {profile.target_role || "Your target role"}
+              {profile.target_role || "Your next opportunity"}
             </p>
           </div>
           <span className="availability-badge">Open to opportunities</span>
@@ -236,9 +255,7 @@ export function RecruiterBriefTemplate({
       <div className="recruiter-content">
         <section className="recruiter-summary">
           <h3>Profile summary</h3>
-          <p>
-            {profile.headline || "Your professional headline will appear here."}
-          </p>
+          <p>{profile.headline || "Your headline will appear here."}</p>
           {profile.bio && <p>{profile.bio}</p>}
         </section>
         <section className="recruiter-projects">
@@ -267,10 +284,10 @@ export function ProjectShowcaseTemplate({
       <header className="showcase-hero flex gap-8 items-start">
         <ProfileImage profile={profile} />
         <div className="flex flex-col gap-2">
-          <p className="site-eyebrow">Project Showcase / 2026</p>
+          <p className="site-eyebrow">Project spotlight / 2026</p>
           <h2>{profile.full_name || "Your name"}</h2>
           <p className="showcase-role">
-            {profile.target_role || "Your target role"}
+            {profile.target_role || "Your next opportunity"}
           </p>
           <p className="showcase-headline">
             {profile.headline || "A thoughtful maker building useful things."}

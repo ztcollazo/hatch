@@ -67,7 +67,7 @@ export function MagicLinkSignIn({
     >
       <h1 className="text-3xl font-bold">Sign in with Magic Link</h1>
       <p className="mt-3 text-slate-300">
-        Enter your email to create or return to your one Professional Profile.
+        Enter your email to create or return to your one profile.
       </p>
       <label className="mt-6 block text-sm font-medium">
         Email

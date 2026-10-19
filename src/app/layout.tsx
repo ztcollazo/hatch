@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Professional Profile Hub",
-  description:
-    "Create and publish a polished Profile Page from one Professional Profile.",
+  title: "Hatch",
+  description: "Create and publish a polished profile page from one profile.",
 };
 
 export default function RootLayout({

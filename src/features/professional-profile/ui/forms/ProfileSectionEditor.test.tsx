@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { ProfileSectionEditor } from "./ProfileSectionEditor";
 
 describe("Section Editing Dashboard", () => {
-  it("creates, reorders, toggles Output Visibility, and removes Profile Section items", async () => {
+  it("creates, reorders, toggles Where to show it, and removes Profile Section items", async () => {
     const user = userEvent.setup();
     render(createElement(ProfileSectionEditor, { profileId: "profile-1" }));
 

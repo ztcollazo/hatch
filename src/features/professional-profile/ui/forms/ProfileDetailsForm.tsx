@@ -17,9 +17,9 @@ const fields: Array<{
   label: string;
   multiline?: boolean;
 }> = [
-  { key: "targetRole", label: "Target role" },
+  { key: "targetRole", label: "What are you looking for?" },
   { key: "headline", label: "Headline" },
-  { key: "publicProfessionalLink", label: "Public professional link" },
+  { key: "publicProfessionalLink", label: "Professional link" },
   { key: "bio", label: "Bio", multiline: true },
 ];
 
@@ -42,9 +42,9 @@ export function ProfileDetailsForm({ initialDetails, save }: Props) {
         });
       }}
     >
-      <h2 className="text-xl font-bold">Professional Profile details</h2>
+      <h2 className="text-xl font-bold">Profile details</h2>
       <p className="mt-1 text-sm text-slate-300">
-        These fields power your draft Profile Page.
+        These details shape your profile.
       </p>
       <div className="mt-5 grid gap-4">
         {fields.map(({ key, label, multiline }) => {

@@ -53,7 +53,7 @@ export function ResumeDocument({ data }: { data: ResumeData }) {
   return (
     <Document
       title={`${data.fullName || "Resume"} Resume`}
-      author={data.fullName || "Professional Profile"}
+      author={data.fullName || "profile"}
     >
       <Page size="LETTER" style={styles.page} wrap>
         <Text style={styles.name}>{data.fullName || "Your Name"}</Text>
@@ -62,40 +62,49 @@ export function ResumeDocument({ data }: { data: ResumeData }) {
             {[data.targetRole, data.headline].filter(Boolean).join(" · ")}
           </Text>
         )}
-        {data.bio && (
-          <Text>{data.bio}</Text>
-        )}
-        {data.sections.map((section) => section.title !== "Skills" && (
-          <View key={section.title} style={styles.section} wrap>
-            <Text style={styles.heading}>{section.title}</Text>
-            {section.entries.map((entry, index) => (
-              <View
-                key={`${entry.title}-${index}`}
-                style={styles.entry}
-                wrap={false}
-              >
-                <Text style={styles.entryTitle}>{entry.title}</Text>
-                {entry.subtitle && (
-                  <Text style={styles.subtitle}>{entry.subtitle}</Text>
-                )}
-                {entry.dates && <Text style={styles.dates}>{entry.dates}</Text>}
-                {entry.description && (
-                  <Text style={styles.description}>{entry.description}</Text>
-                )}
-                {section.title !== "Skills" && entry.bullets.map((bullet, bulletIndex) => (
-                  <Text style={styles.bullet} key={`${bulletIndex}-${bullet}`}>
-                    • {bullet}
-                  </Text>
+        {data.bio && <Text>{data.bio}</Text>}
+        {data.sections.map(
+          (section) =>
+            section.title !== "Skills" && (
+              <View key={section.title} style={styles.section} wrap>
+                <Text style={styles.heading}>{section.title}</Text>
+                {section.entries.map((entry, index) => (
+                  <View
+                    key={`${entry.title}-${index}`}
+                    style={styles.entry}
+                    wrap={false}
+                  >
+                    <Text style={styles.entryTitle}>{entry.title}</Text>
+                    {entry.subtitle && (
+                      <Text style={styles.subtitle}>{entry.subtitle}</Text>
+                    )}
+                    {entry.dates && (
+                      <Text style={styles.dates}>{entry.dates}</Text>
+                    )}
+                    {entry.description && (
+                      <Text style={styles.description}>
+                        {entry.description}
+                      </Text>
+                    )}
+                    {section.title !== "Skills" &&
+                      entry.bullets.map((bullet, bulletIndex) => (
+                        <Text
+                          style={styles.bullet}
+                          key={`${bulletIndex}-${bullet}`}
+                        >
+                          • {bullet}
+                        </Text>
+                      ))}
+                    {entry.url && (
+                      <Link src={entry.url} style={styles.link}>
+                        {entry.url}
+                      </Link>
+                    )}
+                  </View>
                 ))}
-                {entry.url && (
-                  <Link src={entry.url} style={styles.link}>
-                    {entry.url}
-                  </Link>
-                )}
               </View>
-            ))}
-          </View>
-        ))}
+            ),
+        )}
         <Text
           style={styles.footer}
           fixed

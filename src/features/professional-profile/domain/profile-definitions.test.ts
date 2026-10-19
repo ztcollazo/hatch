@@ -16,7 +16,9 @@ describe("Professional Profile element definitions", () => {
       "professional-link",
       "contact",
     ]);
-    expect(profileElementDefinitionByKind.project.table).toBe("profile_projects");
+    expect(profileElementDefinitionByKind.project.table).toBe(
+      "profile_projects",
+    );
   });
 
   it("provides database mappings for each form field", () => {
