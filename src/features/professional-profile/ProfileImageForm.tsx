@@ -5,14 +5,16 @@ import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   profileId: string;
-  initialImage: { path: string; altText: string } | null;
-  save: (path: string, altText: string) => Promise<{ ok: true } | { ok: false; error: string }>;
+  initialImage: { path: string; altText: string; showOnProfilePage: boolean; showOnResume: boolean } | null;
+  save: (path: string, altText: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => Promise<{ ok: true } | { ok: false; error: string }>;
   remove: () => Promise<{ ok: true } | { ok: false; error: string }>;
 };
 
 export function ProfileImageForm({ profileId, initialImage, save, remove }: Props) {
   const [image, setImage] = useState(initialImage);
   const [altText, setAltText] = useState(initialImage?.altText ?? "");
+  const [showOnProfilePage, setShowOnProfilePage] = useState(initialImage?.showOnProfilePage ?? true);
+  const [showOnResume, setShowOnResume] = useState(initialImage?.showOnResume ?? false);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -24,9 +26,9 @@ export function ProfileImageForm({ profileId, initialImage, save, remove }: Prop
       const path = `profiles/${profileId}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
       const { error } = await createClient().storage.from("images").upload(path, file, { upsert: false, contentType: file.type });
       if (error) return setMessage(error.message);
-      const result = await save(path, altText.trim() || "Profile image");
+      const result = await save(path, altText.trim() || "Profile image", { showOnProfilePage, showOnResume });
       if (!result.ok) return setMessage(result.error);
-      setImage({ path, altText: altText.trim() || "Profile image" });
+      setImage({ path, altText: altText.trim() || "Profile image", showOnProfilePage, showOnResume });
       setMessage("Profile image saved. Publish your profile to show it publicly.");
     });
   }
@@ -52,7 +54,11 @@ export function ProfileImageForm({ profileId, initialImage, save, remove }: Prop
         {image ? "Replace image" : "Upload image"}
         <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} onChange={(event) => { const file = event.target.files?.[0]; if (file) upload(file); }} />
       </label>
-      {image && <button type="button" onClick={removeImage} disabled={pending} className="ml-3 rounded-full border border-white/20 px-5 py-3 font-semibold">Remove</button>}
+      {image && <>
+        <label className="mt-4 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnProfilePage} onChange={(event) => setShowOnProfilePage(event.target.checked)} /> Show on profile</label>
+        <label className="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={showOnResume} onChange={(event) => setShowOnResume(event.target.checked)} /> Show on resume</label>
+        <button type="button" onClick={removeImage} disabled={pending} className="ml-3 rounded-full border border-white/20 px-5 py-3 font-semibold">Remove</button>
+      </>}
       {message && <p role="status" className="mt-3 text-sm text-emerald-200">{message}</p>}
     </section>
   );

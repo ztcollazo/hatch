@@ -11,11 +11,13 @@ export type ProfileElementKind =
   | "professional-link"
   | "contact"
   | "project";
-export type ProfileElementInput = Record<string, string> & { id?: string };
+export type ProfileElementInput = Record<string, string | boolean> & { id?: string };
 export type SavedProfileElement = {
   id: string;
   label: string;
   values: ProfileElementInput;
+  show_on_profile_page: boolean;
+  show_on_resume: boolean;
 };
 type Result = { ok: true } | { ok: false; error: string };
 type Props = {
@@ -32,6 +34,7 @@ type Props = {
   ) => Promise<
     { ok: true; item: SavedProfileElement } | { ok: false; error: string }
   >;
+  visibilityAction: (kind: ProfileElementKind, id: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => Promise<Result>;
   initialItems?: Partial<Record<ProfileElementKind, SavedProfileElement[]>>;
 };
 type Definition = {
@@ -165,11 +168,13 @@ function ItemCard({
   kind,
   index,
   onEdit,
+  onVisibilityChange,
 }: {
   item: SavedProfileElement;
   kind: ProfileElementKind;
   index: number;
   onEdit: () => void;
+  onVisibilityChange: (visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => void;
 }) {
   const { ref, handleRef } = useSortable({
     id: `item:${kind}:${item.id}`,
@@ -229,6 +234,10 @@ function ItemCard({
           Edit
         </button>
       </div>
+      <div className="mt-3 flex flex-wrap gap-4 text-sm">
+        <label className="flex items-center gap-2"><input type="checkbox" checked={item.show_on_profile_page} onChange={(event) => onVisibilityChange({ showOnProfilePage: event.target.checked, showOnResume: item.show_on_resume })} /> Show on profile</label>
+        <label className="flex items-center gap-2"><input type="checkbox" checked={item.show_on_resume} onChange={(event) => onVisibilityChange({ showOnProfilePage: item.show_on_profile_page, showOnResume: event.target.checked })} /> Show on resume</label>
+      </div>
       {kind !== "skill" && (
         <dl className="element-details">
           {Object.entries(item.values)
@@ -255,6 +264,7 @@ function ItemCard({
 
 export function ProfileElementsForm({
   saveAction,
+  visibilityAction,
   initialItems = {},
   reorderItemsAction,
   reorderSectionsAction,
@@ -408,6 +418,10 @@ export function ProfileElementsForm({
                           kind={kind}
                           index={i}
                           onEdit={() => editItem(kind, item)}
+                          onVisibilityChange={(visibility) => {
+                            setItems((current) => ({ ...current, [kind]: (current[kind] ?? []).map((entry) => entry.id === item.id ? { ...entry, show_on_profile_page: visibility.showOnProfilePage, show_on_resume: visibility.showOnResume } : entry) }));
+                            startTransition(() => { void visibilityAction(kind, item.id, visibility).then((result) => setReorderMessage(result.ok ? "Visibility updated" : result.error)); });
+                          }}
                         />
                       ))}
                     </ul>
@@ -458,7 +472,7 @@ export function ProfileElementsForm({
                           {key === "summary" ? (
                             <textarea
                               className="mt-1 min-h-20 w-full rounded-lg px-3 py-2"
-                              value={values[kind][key] ?? ""}
+                              value={String(values[kind][key] ?? "")}
                               onChange={(e) =>
                                 update(kind, key, e.target.value)
                               }
@@ -466,7 +480,7 @@ export function ProfileElementsForm({
                           ) : typeOptions[key] ? (
                             <select
                               className="mt-1 w-full rounded-lg px-3 py-2"
-                              value={values[kind][key] ?? ""}
+                              value={String(values[kind][key] ?? "")}
                               onChange={(e) =>
                                 update(kind, key, e.target.value)
                               }
@@ -481,7 +495,7 @@ export function ProfileElementsForm({
                           ) : (
                             <input
                               className="mt-1 w-full rounded-lg px-3 py-2"
-                              value={values[kind][key] ?? ""}
+                              value={String(values[kind][key] ?? "")}
                               onChange={(e) =>
                                 update(kind, key, e.target.value)
                               }

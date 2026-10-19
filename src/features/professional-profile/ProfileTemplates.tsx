@@ -11,13 +11,15 @@ export type ProfileTemplateProfile = {
   elements?: Record<string, DraftElement[]> | null;
   sectionOrder?: string[];
   public_professional_link?: string | null;
-  profile_image?: { path: string; alt_text: string } | null;
+  profile_image?: { path: string; alt_text: string; show_on_profile_page?: boolean; show_on_resume?: boolean } | null;
 };
 
 function ProfileImage({ profile }: { profile: ProfileTemplateProfile }) {
-  if (!profile.profile_image) return null;
+  if (profile.profile_image && profile.profile_image.show_on_profile_page === false) return null;
   const { url } = getSupabaseConfig();
-  return <Image src={`${url}/storage/v1/object/public/images/${profile.profile_image.path}`} alt={profile.profile_image.alt_text} width={128} height={128} className="rounded-full object-cover" />;
+  const image = profile.profile_image;
+  if (!image) return null;
+  return <Image src={`${url}/storage/v1/object/public/images/${image.path}`} alt={image.alt_text} width={128} height={128} className="rounded-full object-cover" />;
 }
 
 const elementTitles: Record<string, string> = {

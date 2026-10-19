@@ -69,7 +69,7 @@ begin
   if profile_row.handle is null or profile_row.full_name is null or profile_row.target_role is null or profile_row.headline is null then
     raise exception 'Publish checklist is incomplete';
   end if;
-  select case when storage_path is null then null else jsonb_build_object('path', storage_path, 'alt_text', coalesce(alt_text, 'Profile image')) end
+  select case when storage_path is null then null else jsonb_build_object('path', storage_path, 'alt_text', coalesce(alt_text, 'Profile image'), 'show_on_profile_page', show_on_profile_page, 'show_on_resume', show_on_resume) end
     into image_value from public.profile_image_metadata
     where profile_id = profile_row.id and show_on_profile_page
     limit 1;

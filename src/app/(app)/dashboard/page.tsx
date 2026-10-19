@@ -11,6 +11,7 @@ import {
   saveProfileImage,
   removeProfileImage,
   reorderProfileElements,
+  updateProfileElementVisibility,
   reorderProfileSections,
 } from "@/features/professional-profile/actions";
 import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
@@ -43,10 +44,10 @@ export default async function DashboardPage() {
     user.email ?? "",
   );
   const draft = await loadDraftProfile(supabase as never, profile.id);
-  const imageMetadata = await supabase.from("profile_image_metadata").select("storage_path,alt_text").eq("profile_id", profile.id).maybeSingle();
+  const imageMetadata = await supabase.from("profile_image_metadata").select("storage_path,alt_text,show_on_profile_page,show_on_resume").eq("profile_id", profile.id).maybeSingle();
   if (imageMetadata.error) throw new Error(imageMetadata.error.message);
-  const image = imageMetadata.data?.storage_path ? { path: imageMetadata.data.storage_path, altText: imageMetadata.data.alt_text ?? "Profile image" } : null;
-  const saveImage = async (path: string, altText: string) => { "use server"; return saveProfileImage(profile.id, path, altText); };
+  const image = imageMetadata.data?.storage_path ? { path: imageMetadata.data.storage_path, altText: imageMetadata.data.alt_text ?? "Profile image", showOnProfilePage: imageMetadata.data.show_on_profile_page !== false, showOnResume: imageMetadata.data.show_on_resume === true } : null;
+  const saveImage = async (path: string, altText: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => { "use server"; return saveProfileImage(profile.id, path, altText, visibility); };
   const removeImage = async () => { "use server"; return removeProfileImage(profile.id); };
   const publishedSnapshot = await supabase
     .from("profile_snapshots")
@@ -99,6 +100,7 @@ export default async function DashboardPage() {
     "use server";
     return reorderProfileSections(profile.id, kinds);
   };
+  const updateVisibility = async (kind: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind, id: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) => { "use server"; return updateProfileElementVisibility(profile.id, kind, id, visibility); };
   const saveElement = async (
     kind: import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind,
     values: import("@/features/professional-profile/ProfileElementsForm").ProfileElementInput,
@@ -208,6 +210,7 @@ export default async function DashboardPage() {
               reorderItemsAction={reorderItems}
               reorderSectionsAction={reorderSections}
               saveAction={saveElement}
+              visibilityAction={updateVisibility}
               initialSectionOrder={
                 draft.sectionOrder as import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind[]
               }
@@ -221,6 +224,8 @@ export default async function DashboardPage() {
                     summary: project.summary ?? "",
                     url: project.url ?? "",
                   },
+                  show_on_profile_page: project.show_on_profile_page,
+                  show_on_resume: project.show_on_resume,
                 })),
               }}
             />

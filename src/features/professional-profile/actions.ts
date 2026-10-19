@@ -17,7 +17,7 @@ export type ProfileProjectInput = {
   url: string;
 };
 
-export async function saveProfileImage(profileId: string, storagePath: string, altText: string) {
+export async function saveProfileImage(profileId: string, storagePath: string, altText: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
@@ -32,7 +32,7 @@ export async function saveProfileImage(profileId: string, storagePath: string, a
   }
   const { error: oldError } = await supabase.from("profile_image_metadata").delete().eq("profile_id", profileId);
   if (oldError) return { ok: false as const, error: oldError.message };
-  const { error } = await supabase.from("profile_image_metadata").insert({ profile_id: profileId, owner_id: user.id, storage_path: storagePath, alt_text: altText.trim() || "Profile image" });
+  const { error } = await supabase.from("profile_image_metadata").insert({ profile_id: profileId, owner_id: user.id, storage_path: storagePath, alt_text: altText.trim() || "Profile image", show_on_profile_page: visibility.showOnProfilePage, show_on_resume: visibility.showOnResume });
   if (error) return { ok: false as const, error: error.message };
   revalidatePath("/dashboard");
   return { ok: true as const };
@@ -155,7 +155,7 @@ export async function saveProfileElement(
   };
   const itemId = values.id;
   for (const [key, value] of Object.entries(values))
-    if (key !== "id" && value.trim()) row[fieldMap[key] ?? key] = value.trim();
+    if (key !== "id" && typeof value === "string" && value.trim()) row[fieldMap[key] ?? key] = value.trim();
   if (!row[definition.required])
     return {
       ok: false as const,
@@ -176,16 +176,19 @@ export async function saveProfileElement(
     ok: true as const,
     item: {
       id: data?.id ?? crypto.randomUUID(),
-      label:
+      label: String(
         values.label ??
         values.schoolName ??
         values.roleTitle ??
         values.title ??
         values.url ??
         "Saved item",
+      ),
       values: Object.fromEntries(
         Object.entries(values).filter(([key]) => key !== "id"),
       ),
+      show_on_profile_page: true,
+      show_on_resume: true,
     },
   };
 }
@@ -241,6 +244,16 @@ const elementTables: Record<ProfileElementKind, string> = {
   contact: "profile_contact_actions",
   project: "profile_projects",
 };
+
+export async function updateProfileElementVisibility(profileId: string, kind: ProfileElementKind, itemId: string, visibility: { showOnProfilePage: boolean; showOnResume: boolean }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
+  const { error } = await supabase.from(elementTables[kind]).update({ show_on_profile_page: visibility.showOnProfilePage, show_on_resume: visibility.showOnResume }).eq("id", itemId).eq("profile_id", profileId);
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
 
 export async function reorderProfileElements(
   profileId: string,
