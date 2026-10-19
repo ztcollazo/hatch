@@ -3,7 +3,7 @@ import React from "react";
 import { BlobProvider } from "@react-pdf/renderer";
 import { useEffect, useMemo } from "react";
 import { ResumeDocument } from "./ResumeDocument";
-import type { ResumeData } from "./resume-schema";
+import type { ResumeData } from "../../data/resume-schema";
 
 export function ResumePreview({ data }: { data: ResumeData }) {
   const [debounced, setDebounced] = React.useState(data);

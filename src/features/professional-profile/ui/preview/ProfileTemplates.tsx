@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { DraftElement, DraftProject } from "./profile-view";
+import type { DraftElement, DraftProject } from "../../data/profile-view";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 
 export type ProfileTemplateProfile = {

@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { profileElementDefinitionByKind } from "./domain/profile-definitions";
-import type { ProfileElementInput, ProfileElementKind, ProfileProjectInput } from "./domain/profile-types";
+import { profileElementDefinitionByKind } from "../domain/profile-definitions";
+import type { ProfileElementInput, ProfileElementKind, ProfileProjectInput } from "../domain/profile-types";
 
 const elementTables = Object.fromEntries(
   Object.values(profileElementDefinitionByKind).map(({ kind, table }) => [kind, table]),

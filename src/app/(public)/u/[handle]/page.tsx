@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { loadPublishedProfile } from "@/features/professional-profile/snapshots";
+import { loadPublishedProfile } from "@/features/professional-profile/data/snapshots";
 import {
   ProjectShowcaseTemplate,
   RecruiterBriefTemplate,
-} from "@/features/professional-profile/ProfileTemplates";
+} from "@/features/professional-profile/ui/preview/ProfileTemplates";
 
 export async function generateMetadata({
   params,

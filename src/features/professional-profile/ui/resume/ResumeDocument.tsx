@@ -6,7 +6,7 @@ import {
   Link,
   StyleSheet,
 } from "@react-pdf/renderer";
-import type { ResumeData } from "./resume-schema";
+import type { ResumeData } from "../../data/resume-schema";
 
 const styles = StyleSheet.create({
   page: {

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { ProfileDetails } from "./domain/profile-types";
+import type { ProfileDetails } from "../../domain/profile-types";
 
-export type { ProfileDetails } from "./domain/profile-types";
+export type { ProfileDetails } from "../../domain/profile-types";
 
 type Props = {
   initialDetails: ProfileDetails;

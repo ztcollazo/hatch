@@ -25,4 +25,4 @@ export {
 } from "./publishing-actions";
 export { deleteProfileData } from "./account-actions";
 export { claimProfileHandle } from "./handle-actions";
-export type { ProfileProjectInput } from "./domain/profile-types";
+export type { ProfileProjectInput } from "../domain/profile-types";

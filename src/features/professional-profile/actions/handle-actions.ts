@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { claimHandle } from "./handles";
-import type { SupabaseProfileClient } from "./profiles";
+import { claimHandle } from "../data/handles";
+import type { SupabaseProfileClient } from "../data/profiles";
 
 export async function claimProfileHandle(
   profileId: string,

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { DraftProfile } from "./profile-view";
+import type { DraftProfile } from "../../data/profile-view";
 import { PrivateProfilePreview } from "./PrivateProfilePreview";
-import ResumePreview from "./ResumeLoader";
-import type { ResumeData } from "./resume-schema";
+import ResumePreview from "../resume/ResumeLoader";
+import type { ResumeData } from "../../data/resume-schema";
 
 type Props = { profile: DraftProfile; resume: ResumeData };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { HandleClaimResult } from "./handles";
+import type { HandleClaimResult } from "../../data/handles";
 
 type Props = {
   profileId: string;

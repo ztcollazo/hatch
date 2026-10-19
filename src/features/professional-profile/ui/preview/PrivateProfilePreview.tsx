@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useState } from "react";
-import type { DraftProfile } from "./profile-view";
+import type { DraftProfile } from "../../data/profile-view";
 import {
   ProjectShowcaseTemplate,
   RecruiterBriefTemplate,

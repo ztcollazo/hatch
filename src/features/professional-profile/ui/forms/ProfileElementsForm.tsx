@@ -7,10 +7,10 @@ import type {
   ProfileElementInput,
   ProfileElementKind,
   SavedProfileElement,
-} from "./domain/profile-types";
-import { profileElementDefinitions } from "./domain/profile-definitions";
+} from "../../domain/profile-types";
+import { profileElementDefinitions } from "../../domain/profile-definitions";
 
-export type { ProfileElementInput, ProfileElementKind, SavedProfileElement } from "./domain/profile-types";
+export type { ProfileElementInput, ProfileElementKind, SavedProfileElement } from "../../domain/profile-types";
 type Result = { ok: true } | { ok: false; error: string };
 type Props = {
   profileId: string;

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { ProfileDetails } from "./domain/profile-types";
+import type { ProfileDetails } from "../domain/profile-types";
 
 export async function saveProfileFullName(profileId: string, fullName: string) {
   const trimmedName = fullName.trim();

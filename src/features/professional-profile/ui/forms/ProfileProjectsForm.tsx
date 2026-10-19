@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
-import type { DraftProject } from "./profile-view";
-import type { ProfileProjectInput } from "./domain/profile-types";
+import type { DraftProject } from "../../data/profile-view";
+import type { ProfileProjectInput } from "../../domain/profile-types";
 type Props = {
   projects: DraftProject[];
   save: (

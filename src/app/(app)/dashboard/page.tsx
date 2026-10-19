@@ -15,21 +15,21 @@ import {
   updateProfileElementVisibility,
   reorderProfileSections,
   saveProfileElement,
-} from "@/features/professional-profile/actions";
-import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
-import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetailsForm";
-import { ProfileImageForm } from "@/features/professional-profile/ProfileImageForm";
-import { ProfileElementsForm } from "@/features/professional-profile/ProfileElementsForm";
-import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
-import { PreviewSwitcher } from "@/features/professional-profile/PreviewSwitcher";
-import { loadDraftProfile } from "@/features/professional-profile/profile-view";
+} from "@/features/professional-profile/actions/actions";
+import { ProfileIdentityForm } from "@/features/professional-profile/ui/forms/ProfileIdentityForm";
+import { ProfileDetailsForm } from "@/features/professional-profile/ui/forms/ProfileDetailsForm";
+import { ProfileImageForm } from "@/features/professional-profile/ui/forms/ProfileImageForm";
+import { ProfileElementsForm } from "@/features/professional-profile/ui/forms/ProfileElementsForm";
+import { HandleClaimForm } from "@/features/professional-profile/ui/forms/HandleClaimForm";
+import { PreviewSwitcher } from "@/features/professional-profile/ui/preview/PreviewSwitcher";
+import { loadDraftProfile } from "@/features/professional-profile/data/profile-view";
 import {
   ensureOneProfessionalProfile,
   type SupabaseProfileClient,
-} from "@/features/professional-profile/profiles";
-import { PublishSnapshotForm } from "@/features/professional-profile/PublishSnapshotForm";
-import { ProfileAccountActions } from "@/features/professional-profile/ProfileAccountActions";
-import { draftToResumeData } from "@/features/professional-profile/resume-schema";
+} from "@/features/professional-profile/data/profiles";
+import { PublishSnapshotForm } from "@/features/professional-profile/ui/forms/PublishSnapshotForm";
+import { ProfileAccountActions } from "@/features/professional-profile/ui/forms/ProfileAccountActions";
+import { draftToResumeData } from "@/features/professional-profile/data/resume-schema";
 import type { ProfileElementInput, ProfileElementKind } from "@/features/professional-profile/domain/profile-types";
 
 export default async function DashboardPage() {

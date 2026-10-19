@@ -1,5 +1,5 @@
-import { defaultSectionOrder, profileElementDefinitions } from "./domain/profile-definitions";
-import type { ProfileElementKind } from "./domain/profile-types";
+import { defaultSectionOrder, profileElementDefinitions } from "../domain/profile-definitions";
+import type { ProfileElementKind } from "../domain/profile-types";
 
 export type DraftElement = {
   id: string;
