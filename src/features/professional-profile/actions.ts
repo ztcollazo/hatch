@@ -9,26 +9,6 @@ import type {
   ProfileElementInput,
   ProfileElementKind,
 } from "./ProfileElementsForm";
-import { loadDraftProfile } from "./profile-view";
-import { createResumePdf } from "./resume";
-
-export async function generateResume(profileId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false as const, error: "You must be signed in." };
-  try {
-    const draft = await loadDraftProfile(supabase as never, profileId);
-    const sections = draft.sectionOrder.map((kind) => ({
-      title: kind === "skill" ? "Skills" : kind.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase()),
-      lines: (kind === "project" ? draft.projects : draft.elements[kind] ?? [])
-        .filter((item) => item.show_on_resume !== false)
-        .map((item) => "title" in item ? [item.title, item.summary ?? ""].filter(Boolean).join(" — ") : item.label),
-    })).filter((section) => section.lines.length);
-    const pdf = createResumePdf({ fullName: draft.full_name ?? "", headline: draft.headline, targetRole: draft.target_role, bio: draft.bio, sections });
-    const encoded = typeof Buffer !== "undefined" ? Buffer.from(pdf, "binary").toString("base64") : btoa(pdf);
-    return { ok: true as const, pdf: encoded, fileName: `${(draft.full_name || "resume").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf` };
-  } catch (error) { return { ok: false as const, error: error instanceof Error ? error.message : "Could not generate the Resume." }; }
-}
 
 export type ProfileProjectInput = {
   id?: string;
@@ -333,7 +313,9 @@ export async function publishProfileSnapshot(
 
 export async function unpublishProfile(profileId: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
   const { error } = await supabase.rpc("unpublish_profile", {
     target_profile_id: profileId,
@@ -346,7 +328,9 @@ export async function unpublishProfile(profileId: string) {
 
 export async function deleteProfileData(profileId: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "You must be signed in." };
 
   // Storage objects are not deleted by Postgres cascades. Remove metadata paths
@@ -356,28 +340,39 @@ export async function deleteProfileData(profileId: string) {
     .select("handle")
     .eq("id", profileId)
     .maybeSingle();
-  if (profileResult.error) return { ok: false as const, error: profileResult.error.message };
-  if (!profileResult.data) return { ok: false as const, error: "Profile not found." };
+  if (profileResult.error)
+    return { ok: false as const, error: profileResult.error.message };
+  if (!profileResult.data)
+    return { ok: false as const, error: "Profile not found." };
   const metadata = await supabase
     .from("profile_image_metadata")
     .select("storage_path")
     .eq("profile_id", profileId);
-  if (metadata.error) return { ok: false as const, error: metadata.error.message };
+  if (metadata.error)
+    return { ok: false as const, error: metadata.error.message };
   const prefix = `profiles/${profileId}/`;
   const paths = (metadata.data ?? [])
     .map((row: { storage_path?: string | null }) => row.storage_path)
     .filter((path): path is string => Boolean(path));
   if (paths.some((path) => !path.startsWith(prefix)))
-    return { ok: false as const, error: "Profile image storage paths are invalid." };
+    return {
+      ok: false as const,
+      error: "Profile image storage paths are invalid.",
+    };
   if (paths.length) {
     const { error } = await supabase.storage.from("images").remove(paths);
-    if (error) return { ok: false as const, error: `Could not remove profile images: ${error.message}` };
+    if (error)
+      return {
+        ok: false as const,
+        error: `Could not remove profile images: ${error.message}`,
+      };
   }
   const { error } = await supabase.rpc("delete_profile_data", {
     target_profile_id: profileId,
   });
   if (error) return { ok: false as const, error: error.message };
-  if (profileResult.data.handle) revalidatePath(`/u/${profileResult.data.handle}`);
+  if (profileResult.data.handle)
+    revalidatePath(`/u/${profileResult.data.handle}`);
   revalidatePath("/dashboard");
   return { ok: true as const };
 }

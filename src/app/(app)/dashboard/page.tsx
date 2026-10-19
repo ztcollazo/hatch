@@ -10,14 +10,13 @@ import {
   saveProfileDetails,
   reorderProfileElements,
   reorderProfileSections,
-  generateResume,
 } from "@/features/professional-profile/actions";
 import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
 import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetailsForm";
 import { ProfileElementsForm } from "@/features/professional-profile/ProfileElementsForm";
 import { saveProfileElement } from "@/features/professional-profile/actions";
 import { HandleClaimForm } from "@/features/professional-profile/HandleClaimForm";
-import { PrivateProfilePreview } from "@/features/professional-profile/PrivateProfilePreview";
+import { PreviewSwitcher } from "@/features/professional-profile/PreviewSwitcher";
 import { loadDraftProfile } from "@/features/professional-profile/profile-view";
 import {
   ensureOneProfessionalProfile,
@@ -25,7 +24,7 @@ import {
 } from "@/features/professional-profile/profiles";
 import { PublishSnapshotForm } from "@/features/professional-profile/PublishSnapshotForm";
 import { ProfileAccountActions } from "@/features/professional-profile/ProfileAccountActions";
-import { ResumeExportForm } from "@/features/professional-profile/ResumeExportForm";
+import { draftToResumeData } from "@/features/professional-profile/resume-schema";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -68,10 +67,6 @@ export default async function DashboardPage() {
     );
     if (!result.ok) return result;
     return { ok: true as const, publishedAt: new Date().toISOString() };
-  };
-  const generateResumePdf = async () => {
-    "use server";
-    return generateResume(profile.id);
   };
   const unpublish = async () => {
     "use server";
@@ -204,7 +199,9 @@ export default async function DashboardPage() {
               reorderItemsAction={reorderItems}
               reorderSectionsAction={reorderSections}
               saveAction={saveElement}
-              initialSectionOrder={draft.sectionOrder as import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind[]}
+              initialSectionOrder={
+                draft.sectionOrder as import("@/features/professional-profile/ProfileElementsForm").ProfileElementKind[]
+              }
               initialItems={{
                 ...draft.elements,
                 project: draft.projects.map((project) => ({
@@ -219,7 +216,6 @@ export default async function DashboardPage() {
               }}
             />
           </div>
-          <ResumeExportForm generate={generateResumePdf} />
           <ProfileAccountActions
             unpublish={unpublish}
             deleteProfile={deleteProfile}
@@ -229,7 +225,7 @@ export default async function DashboardPage() {
 
         <aside id="preview" className="preview-column">
           <div className="preview-sticky">
-            <PrivateProfilePreview profile={draft} />
+            <PreviewSwitcher profile={draft} resume={draftToResumeData(draft)} />
           </div>
         </aside>
       </div>

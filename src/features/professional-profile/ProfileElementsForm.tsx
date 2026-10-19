@@ -2,10 +2,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { DragDropProvider } from "@dnd-kit/react";
 import type { DragEndEvent } from "@dnd-kit/react";
-import {
-  isSortableOperation,
-  useSortable,
-} from "@dnd-kit/react/sortable";
+import { isSortableOperation, useSortable } from "@dnd-kit/react/sortable";
 
 export type ProfileElementKind =
   | "education"
@@ -23,7 +20,10 @@ export type SavedProfileElement = {
 type Result = { ok: true } | { ok: false; error: string };
 type Props = {
   profileId: string;
-  reorderItemsAction: (kind: ProfileElementKind, ids: string[]) => Promise<Result>;
+  reorderItemsAction: (
+    kind: ProfileElementKind,
+    ids: string[],
+  ) => Promise<Result>;
   reorderSectionsAction: (kinds: ProfileElementKind[]) => Promise<Result>;
   initialSectionOrder?: ProfileElementKind[];
   saveAction: (
@@ -177,10 +177,7 @@ function ItemCard({
     index,
   });
   return (
-    <li
-      ref={ref}
-      className="element-card"
-    >
+    <li ref={ref} className="element-card">
       <div className="flex items-center justify-between gap-3">
         <span
           ref={handleRef}
@@ -237,7 +234,7 @@ function ItemCard({
           {Object.entries(item.values)
             .filter(
               ([key, value]) =>
-                key !== "id" &&
+                !(["id", "show_on_resume", "show_on_profile_page"].includes(key)) &&
                 value &&
                 !(
                   ["schoolName", "roleTitle", "label"].includes(key) &&
@@ -295,7 +292,8 @@ export function ProfileElementsForm({
       ?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
   const move = (event: DragEndEvent) => {
-    if (event.canceled || !event.operation.source || !event.operation.target) return;
+    if (event.canceled || !event.operation.source || !event.operation.target)
+      return;
     if (!isSortableOperation(event.operation)) return;
     const source = event.operation.source;
     // The optimistic sorting plugin intentionally makes the source the final
@@ -311,7 +309,8 @@ export function ProfileElementsForm({
       if (projectedIndex === initialIndex) return;
       const next = [...latestSectionOrder.current];
       const fromIndex = next.indexOf(kind);
-      if (fromIndex < 0 || projectedIndex < 0 || projectedIndex >= next.length) return;
+      if (fromIndex < 0 || projectedIndex < 0 || projectedIndex >= next.length)
+        return;
       next.splice(fromIndex, 1);
       next.splice(projectedIndex, 0, kind);
       setSectionOrder(next);
@@ -324,7 +323,9 @@ export function ProfileElementsForm({
           })
           .catch((error: unknown) => {
             setReorderMessage(
-              error instanceof Error ? error.message : "Unable to save section order.",
+              error instanceof Error
+                ? error.message
+                : "Unable to save section order.",
             );
           });
       });
@@ -337,7 +338,8 @@ export function ProfileElementsForm({
       if (fromIndex < 0 || projectedIndex === initialIndex) return;
       const next = [...current];
       const [entry] = next.splice(fromIndex, 1);
-      if (!entry || projectedIndex < 0 || projectedIndex >= next.length + 1) return;
+      if (!entry || projectedIndex < 0 || projectedIndex >= next.length + 1)
+        return;
       next.splice(projectedIndex, 0, entry);
       setItems((c) => ({ ...c, [kind]: next }));
       startTransition(() => {
@@ -354,7 +356,9 @@ export function ProfileElementsForm({
           })
           .catch((error: unknown) => {
             setReorderMessage(
-              error instanceof Error ? error.message : "Unable to save item order.",
+              error instanceof Error
+                ? error.message
+                : "Unable to save item order.",
             );
           });
       });
@@ -380,114 +384,122 @@ export function ProfileElementsForm({
           const saved = items[kind] ?? [];
           return (
             <SortableHandle
-                key={kind}
-                id={`section:${kind}`}
-                group="sections"
-                index={index}
-                className="element-group profile-element-section rounded-xl p-5"
-              >
-                {(handleRef) => <>
-                <div className="section-reorder-header">
-                  <div className="section-title-row">
-                    <SectionDragHandle handleRef={handleRef} />
-                    <h3 className="font-semibold">{definition.title}</h3>
+              key={kind}
+              id={`section:${kind}`}
+              group="sections"
+              index={index}
+              className="element-group profile-element-section rounded-xl p-5"
+            >
+              {(handleRef) => (
+                <>
+                  <div className="section-reorder-header">
+                    <div className="section-title-row">
+                      <SectionDragHandle handleRef={handleRef} />
+                      <h3 className="font-semibold">{definition.title}</h3>
+                    </div>
+                    <span className="element-count">{saved.length} saved</span>
                   </div>
-                  <span className="element-count">{saved.length} saved</span>
-                </div>
-                {saved.length ? (
-                  <ul
-                    className={`mt-3 gap-3 grid`}
+                  {saved.length ? (
+                    <ul className={`mt-3 gap-3 grid`}>
+                      {saved.map((item, i) => (
+                        <ItemCard
+                          key={item.id}
+                          item={item}
+                          kind={kind}
+                          index={i}
+                          onEdit={() => editItem(kind, item)}
+                        />
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="empty-element">
+                      No saved {definition.title.toLowerCase()} yet.
+                    </p>
+                  )}
+                  <form
+                    id={`element-form-${kind}`}
+                    className="element-form mt-4 pt-4"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setMessage(null);
+                      startTransition(async () => {
+                        const editing = Boolean(values[kind].id);
+                        const result = await saveAction(kind, values[kind]);
+                        setMessage(
+                          result.ok
+                            ? `${definition.title} ${editing ? "updated" : "saved"}.`
+                            : result.error,
+                        );
+                        if (result.ok) {
+                          setValues((c) => ({ ...c, [kind]: {} }));
+                          setItems((c) => ({
+                            ...c,
+                            [kind]: c[kind]?.some(
+                              (x) => x.id === result.item.id,
+                            )
+                              ? c[kind]!.map((x) =>
+                                  x.id === result.item.id ? result.item : x,
+                                )
+                              : [...(c[kind] ?? []), result.item],
+                          }));
+                        }
+                      });
+                    }}
                   >
-                    {saved.map((item, i) => (
-                      <ItemCard
-                        key={item.id}
-                        item={item}
-                        kind={kind}
-                        index={i}
-                        onEdit={() => editItem(kind, item)}
-                      />
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="empty-element">
-                    No saved {definition.title.toLowerCase()} yet.
-                  </p>
-                )}
-                <form
-                  id={`element-form-${kind}`}
-                  className="element-form mt-4 pt-4"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setMessage(null);
-                    startTransition(async () => {
-                      const editing = Boolean(values[kind].id);
-                      const result = await saveAction(kind, values[kind]);
-                      setMessage(
-                        result.ok
-                          ? `${definition.title} ${editing ? "updated" : "saved"}.`
-                          : result.error,
-                      );
-                      if (result.ok) {
-                        setValues((c) => ({ ...c, [kind]: {} }));
-                        setItems((c) => ({
-                          ...c,
-                          [kind]: c[kind]?.some((x) => x.id === result.item.id)
-                            ? c[kind]!.map((x) =>
-                                x.id === result.item.id ? result.item : x,
-                              )
-                            : [...(c[kind] ?? []), result.item],
-                        }));
-                      }
-                    });
-                  }}
-                >
-                  <p className="form-kicker">
-                    {values[kind].id
-                      ? `Editing ${definition.title}`
-                      : `Add ${definition.title}`}
-                  </p>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    {definition.fields.map(([key, label]) => (
-                      <label key={key} className="block text-sm font-medium">
-                        {label}
-                        {key === "summary" ? (
-                          <textarea
-                            className="mt-1 min-h-20 w-full rounded-lg px-3 py-2"
-                            value={values[kind][key] ?? ""}
-                            onChange={(e) => update(kind, key, e.target.value)}
-                          />
-                        ) : typeOptions[key] ? (
-                          <select
-                            className="mt-1 w-full rounded-lg px-3 py-2"
-                            value={values[kind][key] ?? ""}
-                            onChange={(e) => update(kind, key, e.target.value)}
-                          >
-                            <option value="">Choose a type</option>
-                            {typeOptions[key].map(([v, l]) => (
-                              <option key={v} value={v}>
-                                {l}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            className="mt-1 w-full rounded-lg px-3 py-2"
-                            value={values[kind][key] ?? ""}
-                            onChange={(e) => update(kind, key, e.target.value)}
-                          />
-                        )}
-                      </label>
-                    ))}
-                  </div>
-                  <button
-                    className="save-element mt-4 rounded-full px-4 py-2 text-sm"
-                    type="submit"
-                    disabled={isPending}
-                  >
-                    {values[kind].id ? "Update" : "Save"} {definition.title}
-                  </button>
-                </form>
-                </>}
+                    <p className="form-kicker">
+                      {values[kind].id
+                        ? `Editing ${definition.title}`
+                        : `Add ${definition.title}`}
+                    </p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      {definition.fields.map(([key, label]) => (
+                        <label key={key} className="block text-sm font-medium">
+                          {label}
+                          {key === "summary" ? (
+                            <textarea
+                              className="mt-1 min-h-20 w-full rounded-lg px-3 py-2"
+                              value={values[kind][key] ?? ""}
+                              onChange={(e) =>
+                                update(kind, key, e.target.value)
+                              }
+                            />
+                          ) : typeOptions[key] ? (
+                            <select
+                              className="mt-1 w-full rounded-lg px-3 py-2"
+                              value={values[kind][key] ?? ""}
+                              onChange={(e) =>
+                                update(kind, key, e.target.value)
+                              }
+                            >
+                              <option value="">Choose a type</option>
+                              {typeOptions[key].map(([v, l]) => (
+                                <option key={v} value={v}>
+                                  {l}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              className="mt-1 w-full rounded-lg px-3 py-2"
+                              value={values[kind][key] ?? ""}
+                              onChange={(e) =>
+                                update(kind, key, e.target.value)
+                              }
+                            />
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                    <button
+                      className="save-element mt-4 rounded-full px-4 py-2 text-sm"
+                      type="submit"
+                      disabled={isPending}
+                    >
+                      {values[kind].id ? "Update" : "Save"} {definition.title}
+                    </button>
+                  </form>
+                </>
+              )}
             </SortableHandle>
           );
         })}

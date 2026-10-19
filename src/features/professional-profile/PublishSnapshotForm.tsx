@@ -14,7 +14,11 @@ type PublishAction = (formData: FormData) => Promise<PublishResult>;
 function PublishButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className="publish-snapshot-button" disabled={pending}>
+    <button
+      type="submit"
+      className="publish-snapshot-button"
+      disabled={pending}
+    >
       {pending ? "Publishing…" : "Publish profile page"}
       {!pending && <span aria-hidden="true">→</span>}
     </button>
@@ -45,32 +49,56 @@ export function PublishSnapshotForm({
             professional story.
           </p>
         </div>
-        <span className="publish-lockup" aria-hidden="true">↗</span>
+        <span className="publish-lockup" aria-hidden="true">
+          ↗
+        </span>
       </div>
       <fieldset className="template-options">
         <legend>Choose a template</legend>
         <label className="template-option">
-          <input type="radio" name="template" value="recruiter-brief" defaultChecked={selectedTemplate === "recruiter-brief"} />
+          <input
+            type="radio"
+            name="template"
+            value="recruiter-brief"
+            defaultChecked={selectedTemplate === "recruiter-brief"}
+          />
           <span className="template-option-mark" />
-          <span><strong>Recruiter Brief</strong><small>Clear, focused, and easy to scan.</small></span>
+          <span>
+            <strong>Recruiter Brief</strong>
+            <small>Clear, focused, and easy to scan.</small>
+          </span>
         </label>
         <label className="template-option">
-          <input type="radio" name="template" value="project-showcase" defaultChecked={selectedTemplate === "project-showcase"} />
+          <input
+            type="radio"
+            name="template"
+            value="project-showcase"
+            defaultChecked={selectedTemplate === "project-showcase"}
+          />
           <span className="template-option-mark" />
-          <span><strong>Project Showcase</strong><small>Make your work and point of view lead.</small></span>
+          <span>
+            <strong>Project Showcase</strong>
+            <small>Make your work and point of view lead.</small>
+          </span>
         </label>
       </fieldset>
       <div className="publish-snapshot-actions">
         <PublishButton />
-        <p>Publishes to <strong>/u/{handle ?? "your-handle"}</strong></p>
+        <p>
+          Publishes to <strong>/u/{handle ?? "your-handle"}</strong>
+        </p>
       </div>
       {result?.ok && (
         <p className="publish-feedback publish-feedback-success" role="status">
-          <span aria-hidden="true">✓</span> Published successfully. Your profile is live at <strong>/u/{handle ?? "your-handle"}</strong>.
+          <span aria-hidden="true">✓</span> Published successfully. Your profile
+          is live at <strong>/u/{handle ?? "your-handle"}</strong>.
         </p>
       )}
       {result && !result.ok && (
-        <p className="publish-feedback publish-feedback-error" role="alert">{result.error ?? "We couldn't publish your profile. Please try again."}</p>
+        <p className="publish-feedback publish-feedback-error" role="alert">
+          {result.error ??
+            "We couldn't publish your profile. Please try again."}
+        </p>
       )}
     </form>
   );

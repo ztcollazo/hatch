@@ -123,7 +123,9 @@ function ElementList({
   );
   const orderedKinds = [
     ...(sectionOrder ?? Object.keys(normalized)),
-    ...Object.keys(normalized).filter((kind) => !(sectionOrder ?? []).includes(kind)),
+    ...Object.keys(normalized).filter(
+      (kind) => !(sectionOrder ?? []).includes(kind),
+    ),
   ];
   return (
     <div className="preview-elements">
@@ -232,7 +234,10 @@ export function RecruiterBriefTemplate({
           </div>
           <ProjectCards profile={profile} />
         </section>
-        <ElementList elements={profile.elements} sectionOrder={profile.sectionOrder} />
+        <ElementList
+          elements={profile.elements}
+          sectionOrder={profile.sectionOrder}
+        />
       </div>
     </article>
   );
@@ -264,7 +269,10 @@ export function ProjectShowcaseTemplate({
           </div>
           <ProjectCards profile={profile} showcase />
         </section>
-        <ElementList elements={profile.elements} sectionOrder={profile.sectionOrder} />
+        <ElementList
+          elements={profile.elements}
+          sectionOrder={profile.sectionOrder}
+        />
       </div>
     </article>
   );
