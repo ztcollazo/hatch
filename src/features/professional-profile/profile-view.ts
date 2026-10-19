@@ -2,6 +2,8 @@ export type DraftElement = {
   id: string;
   label: string;
   item_order: number;
+  show_on_profile_page: boolean;
+  show_on_resume: boolean;
   values: Record<string, string>;
 };
 
@@ -121,7 +123,7 @@ export async function loadDraftProfile(
   ] as const) {
     const result = await supabase
       .from(table)
-      .select(columns)
+      .select(`${columns},show_on_profile_page,show_on_resume`)
       .eq("profile_id", profileId)
       .order("item_order", { ascending: true });
     if (result.error) throw new Error(result.error.message);
@@ -139,6 +141,8 @@ export async function loadDraftProfile(
         id: String(item.id),
         label: String(item[label] ?? "Saved item"),
         item_order: Number(item.item_order ?? 0),
+        show_on_profile_page: item.show_on_profile_page !== false,
+        show_on_resume: item.show_on_resume === true,
         values,
       };
     });

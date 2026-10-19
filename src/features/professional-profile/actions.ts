@@ -9,6 +9,26 @@ import type {
   ProfileElementInput,
   ProfileElementKind,
 } from "./ProfileElementsForm";
+import { loadDraftProfile } from "./profile-view";
+import { createResumePdf } from "./resume";
+
+export async function generateResume(profileId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "You must be signed in." };
+  try {
+    const draft = await loadDraftProfile(supabase as never, profileId);
+    const sections = draft.sectionOrder.map((kind) => ({
+      title: kind === "skill" ? "Skills" : kind.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase()),
+      lines: (kind === "project" ? draft.projects : draft.elements[kind] ?? [])
+        .filter((item) => item.show_on_resume !== false)
+        .map((item) => "title" in item ? [item.title, item.summary ?? ""].filter(Boolean).join(" — ") : item.label),
+    })).filter((section) => section.lines.length);
+    const pdf = createResumePdf({ fullName: draft.full_name ?? "", headline: draft.headline, targetRole: draft.target_role, bio: draft.bio, sections });
+    const encoded = typeof Buffer !== "undefined" ? Buffer.from(pdf, "binary").toString("base64") : btoa(pdf);
+    return { ok: true as const, pdf: encoded, fileName: `${(draft.full_name || "resume").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf` };
+  } catch (error) { return { ok: false as const, error: error instanceof Error ? error.message : "Could not generate the Resume." }; }
+}
 
 export type ProfileProjectInput = {
   id?: string;

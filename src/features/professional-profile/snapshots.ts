@@ -49,6 +49,8 @@ function normalizeSnapshot(snapshot: ProfileSnapshot): ProfileSnapshot {
           id: String(raw.id),
           label: String(raw[elementLabels[kind] ?? "label"] ?? "Saved item"),
           item_order: Number(raw.item_order ?? 0),
+          show_on_profile_page: raw.show_on_profile_page !== false,
+          show_on_resume: raw.show_on_resume === true,
           values: Object.fromEntries(
             Object.entries(raw)
               .filter(

@@ -10,6 +10,7 @@ import {
   saveProfileDetails,
   reorderProfileElements,
   reorderProfileSections,
+  generateResume,
 } from "@/features/professional-profile/actions";
 import { ProfileIdentityForm } from "@/features/professional-profile/ProfileIdentityForm";
 import { ProfileDetailsForm } from "@/features/professional-profile/ProfileDetailsForm";
@@ -24,6 +25,7 @@ import {
 } from "@/features/professional-profile/profiles";
 import { PublishSnapshotForm } from "@/features/professional-profile/PublishSnapshotForm";
 import { ProfileAccountActions } from "@/features/professional-profile/ProfileAccountActions";
+import { ResumeExportForm } from "@/features/professional-profile/ResumeExportForm";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -66,6 +68,10 @@ export default async function DashboardPage() {
     );
     if (!result.ok) return result;
     return { ok: true as const, publishedAt: new Date().toISOString() };
+  };
+  const generateResumePdf = async () => {
+    "use server";
+    return generateResume(profile.id);
   };
   const unpublish = async () => {
     "use server";
@@ -213,6 +219,7 @@ export default async function DashboardPage() {
               }}
             />
           </div>
+          <ResumeExportForm generate={generateResumePdf} />
           <ProfileAccountActions
             unpublish={unpublish}
             deleteProfile={deleteProfile}
