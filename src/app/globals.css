@@ -262,7 +262,6 @@ a:focus-visible {
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 .element-card {
-
   border: 1px solid #d8d5cd;
   border-radius: 10px;
   background: #faf9f6;
@@ -843,6 +842,7 @@ main[aria-label="Published profile"] .showcase-hero {
   border-radius: 12px;
   background: #f7f5ef;
   color: var(--ink);
+
 }
 .profile-element-section > .element-form {
   margin-top: 20px;
@@ -947,3 +947,36 @@ main[aria-label="Published profile"] .showcase-hero {
 .account-feedback { margin-top: 12px !important; margin-bottom: 0 !important; border-radius: 8px; padding: 10px 12px; }
 .account-feedback.success { background: #e9f5ed; color: #20643a !important; }
 .account-feedback.danger { background: #fff0ed; color: #9b3328 !important; }
+
+.reorder-guide {
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+  align-items: start;
+  color: var(--blue);
+  font-size: 13px;
+  background-color: var(--soft-blue);
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--blue);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.reorder-guide div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-title-row {
+  display: flex;
+  gap: 8px;
+}
+
+.section-reorder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

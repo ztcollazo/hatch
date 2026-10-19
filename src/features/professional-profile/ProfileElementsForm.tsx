@@ -181,7 +181,7 @@ function ItemCard({
       ref={ref}
       className="element-card"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <span
           ref={handleRef}
           className="drag-handle"
