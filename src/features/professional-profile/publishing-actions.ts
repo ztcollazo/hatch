@@ -61,4 +61,3 @@ export async function unpublishProfile(profileId: string) {
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
-

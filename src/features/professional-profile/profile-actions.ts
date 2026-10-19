@@ -59,4 +59,3 @@ export async function saveProfileDetails(
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
-

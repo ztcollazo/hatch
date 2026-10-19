@@ -51,4 +51,3 @@ export async function removeProfileImage(profileId: string) {
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
-

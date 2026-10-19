@@ -53,4 +53,3 @@ export async function deleteProfileData(profileId: string) {
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
-
